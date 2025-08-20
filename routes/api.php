@@ -2,22 +2,25 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProgramController; // <-- This line was missing
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProgramController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Public routes for authentication
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-// Route for getting all accreditation programs
-Route::get('/programs', [ProgramController::class, 'index']);
+// Protected routes (require authentication)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // Route for getting all accreditation programs
+    Route::get('/programs', [ProgramController::class, 'index']);
+});
