@@ -1,0 +1,17 @@
+# .dockerignore
+
+# Ignore git history
+.git
+.gitignore
+
+# Ignore local environment file
+.env
+
+# Ignore dependency folders
+# These are installed INSIDE the container
+/vendor
+/node_modules
+
+# Ignore storage files that shouldn't be in the image
+/storage/*.key
+/storage/logs/*.log
