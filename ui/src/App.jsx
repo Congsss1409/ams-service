@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // We will load Bootstrap CSS dynamically to resolve the build error.
-import { Form, Button, Spinner, Alert, Nav, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Spinner, Alert, Nav, Dropdown, Table, Modal } from 'react-bootstrap';
 
 // --- Asset URLs ---
 // IMPORTANT: Place your LOGO (1).png and bg.jpg files in the `public` folder of your React project.
@@ -155,7 +155,7 @@ function LoginPage({ onLoginSuccess }) {
       <div style={formColumnStyles}>
         <div style={{ maxWidth: '380px', width: '100%' }}>
           <div className="text-center mb-4">
-            <img src={logoUrl} alt="Logo" style={{ width: '90px' }} />
+            <img src={logoUrl} alt="Logo" style={{ width: '120px' }} />
             <h2 className="mt-3 fw-bold">Sign in</h2>
           </div>
           {error && <Alert variant="danger">{error}</Alert>}
@@ -254,6 +254,178 @@ function TopNavbar({ onLogout, onToggleSidebar }) {
     );
 }
 
+// --- NEW Program Management Component ---
+function ProgramManagementPage({ token, onLogout }) {
+    const [programs, setPrograms] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [currentProgram, setCurrentProgram] = useState({ id: null, name: '', accreditation_level: '', status: '' });
+
+    const fetchPrograms = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/programs', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch programs.');
+            const data = await response.json();
+            setPrograms(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchPrograms();
+    }, [token]);
+
+    const handleShowModal = (program = null) => {
+        if (program) {
+            setCurrentProgram(program);
+        } else {
+            setCurrentProgram({ id: null, name: '', accreditation_level: '', status: '' });
+        }
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => setShowModal(false);
+
+    const handleSaveProgram = async () => {
+        const url = currentProgram.id 
+            ? `http://localhost:8000/api/programs/${currentProgram.id}`
+            : 'http://localhost:8000/api/programs';
+        
+        const method = currentProgram.id ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(currentProgram)
+            });
+            if (!response.ok) throw new Error('Failed to save program.');
+            fetchPrograms(); // Refresh the list
+            handleCloseModal();
+        } catch (err) {
+            // You can add more specific error handling here
+            alert(err.message);
+        }
+    };
+
+    const handleDeleteProgram = async (id) => {
+        if (window.confirm('Are you sure you want to delete this program?')) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/programs/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to delete program.');
+                fetchPrograms(); // Refresh the list
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    };
+
+    return (
+        <>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Program Management</h1>
+                <Button onClick={() => handleShowModal()} style={{ backgroundColor: '#5044e4', border: 'none' }}>
+                    <i className="bi bi-plus-circle me-2"></i> Add Program
+                </Button>
+            </div>
+
+            {isLoading && <Spinner animation="border" />}
+            {error && <Alert variant="danger">{error}</Alert>}
+            
+            {!isLoading && !error && (
+                <Table striped bordered hover responsive>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Program Name</th>
+                            <th>Accreditation Level</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {programs.map(program => (
+                            <tr key={program.id}>
+                                <td>{program.id}</td>
+                                <td>{program.name}</td>
+                                <td>{program.accreditation_level}</td>
+                                <td>{program.status}</td>
+                                <td>
+                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(program)}>
+                                        <i className="bi bi-pencil-square"></i> Edit
+                                    </Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProgram(program.id)}>
+                                        <i className="bi bi-trash"></i> Delete
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            )}
+
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{currentProgram.id ? 'Edit Program' : 'Add New Program'}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Program Name</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                value={currentProgram.name}
+                                onChange={(e) => setCurrentProgram({...currentProgram, name: e.target.value})}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Accreditation Level</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                value={currentProgram.accreditation_level}
+                                onChange={(e) => setCurrentProgram({...currentProgram, accreditation_level: e.target.value})}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Status</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                value={currentProgram.status}
+                                onChange={(e) => setCurrentProgram({...currentProgram, status: e.target.value})}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>Close</Button>
+                    <Button variant="primary" onClick={handleSaveProgram} style={{ backgroundColor: '#5044e4', border: 'none' }}>Save Changes</Button>
+                </Modal.Footer>
+            </Modal>
+        </>
+    );
+}
+
+
 function DashboardLayout({ onLogout, token }) {
     const [user, setUser] = useState(null);
     const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -287,8 +459,8 @@ function DashboardLayout({ onLogout, token }) {
             <div className="d-flex flex-column" style={{ flex: 1 }}>
                 <TopNavbar onLogout={onLogout} onToggleSidebar={toggleSidebar} />
                 <main className="p-4 flex-grow-1">
-                    <h1>Dashboard</h1>
-                    <p>Welcome to the Accreditation Management System.</p>
+                    {/* Replace the placeholder with the new Program Management component */}
+                    <ProgramManagementPage token={token} onLogout={onLogout} />
                 </main>
             </div>
         </div>
