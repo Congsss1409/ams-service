@@ -1,61 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# School Management System III - Accreditation Module
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A comprehensive, web-based School Management System designed to modernize and streamline the core operations of an educational institution, with a primary focus on managing the complex process of accreditation.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📖 About The Project
 
-## Learning Laravel
+This repository contains the central **Accreditation Management System (AMS)** and **Executive Information System (EIS)** for the School Management System III capstone project. Developed as a stand-alone microservice, its primary role is to act as the "brain" of the entire system, gathering data from nine other operational modules to provide a centralized hub for accreditation document management, compliance tracking, and high-level analytics for school leadership.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+This project was built by 4th-year IT students to solve the real-world challenge of preparing for school accreditation, based on the processes of Bestlink College of the Philippines.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+![Login Page Screenshot][![image.png](https://i.postimg.cc/sXGYxXTm/image.png)](https://postimg.cc/xJYJF0DN)
+### ✨ Features
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Secure Authentication:** A complete login and registration system using Laravel Sanctum.
+* **Program Management:** A full CRUD interface to manage academic programs and their accreditation levels.
+* **Document Repository:** Functionality for uploading, viewing, and managing accreditation documents for each program.
+* **Dynamic Dashboard:** An interactive dashboard built with React.js, featuring a collapsible sidebar, a live-updating clock, and a user profile section.
+* **Modern UI/UX:** A professional and responsive user interface built with Bootstrap and styled with custom themes, including interactive alerts with SweetAlert2.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠️ Built With
 
-### Premium Partners
+This project is built on a modern, robust technology stack, containerized for consistency and ease of development.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+* **Backend:** PHP / Laravel
+* **Frontend:** JavaScript / React.js
+* **Database:** MySQL
+* **Styling:** Bootstrap / React Bootstrap
+* **Containerization:** Docker & Docker Compose
+* **API Client:** Postman
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Getting Started
 
-## Code of Conduct
+To get a local copy up and running, follow these simple steps.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Prerequisites
 
-## Security Vulnerabilities
+You will need the following software installed on your machine:
+* [Git](https://git-scm.com/)
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+* [Composer](https://getcomposer.org/)
+* [Node.js & npm](https://nodejs.org/)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Installation & Setup
 
-## License
+1.  **Clone the repo**
+    ```sh
+    git clone [https://github.com/your-username/ams-service.git](https://github.com/your-username/ams-service.git)
+    cd ams-service
+    ```
+2.  **Create your environment file**
+    ```sh
+    cp .env.example .env
+    ```
+3.  **Install Frontend Dependencies**
+    ```sh
+    cd ui
+    npm install
+    cd ..
+    ```
+4.  **Build and Run the Docker Containers**
+    ```sh
+    docker-compose up -d --build
+    ```
+5.  **Run Database Migrations & Seeding**
+    ```sh
+    docker-compose exec app php artisan migrate:fresh --seed
+    ```
+6.  **Start the Frontend Development Server** (in a new terminal)
+    ```sh
+    cd ui
+    npm run dev
+    ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Your application should now be running!
+* **Backend API:** `http://localhost:8000`
+* **Frontend UI:** `http://localhost:5173`
+
+---
+## 🗺️ System Architecture
+
+Our School Management System is built on a microservices architecture, with 10 independent services that communicate via APIs. This `ams-service` acts as the central reporting and management hub.
+
+![Dashboard Screenshot](https://i.imgur.com/your-dashboard-screenshot-id.png)
