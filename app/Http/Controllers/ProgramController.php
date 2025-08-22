@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ProgramController extends Controller
@@ -13,8 +14,15 @@ class ProgramController extends Controller
      */
     public function index()
     {
-        $programs = Program::all();
-        return response()->json($programs);
+        try {
+            $programs = Program::all();
+            return response()->json($programs);
+        } catch (\Exception $e) {
+            // Log the actual error for debugging
+            Log::error('Failed to fetch programs: ' . $e->getMessage());
+            // Return a user-friendly error message
+            return response()->json(['message' => 'An error occurred while fetching programs.'], 500);
+        }
     }
 
     /**
@@ -32,7 +40,6 @@ class ProgramController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        // **FIX:** Use the validated data to create the new program.
         $program = Program::create($validator->validated());
 
         return response()->json($program, 201);
@@ -61,7 +68,6 @@ class ProgramController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        // Use the validated data to update the program.
         $program->update($validator->validated());
 
         return response()->json($program);

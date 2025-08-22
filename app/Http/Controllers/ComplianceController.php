@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ComplianceCriterion;
+use App\Models\Program;
+use App\Models\Document;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class ComplianceController extends Controller
+{
+    public function getComplianceMatrix(Program $program)
+    {
+        try {
+            $program->load('documents'); 
+            $allCriteria = ComplianceCriterion::all();
+            
+            if ($allCriteria->isEmpty()) {
+                Log::warning('Compliance matrix requested, but no criteria are seeded in the database.');
+                return response()->json([]);
+            }
+            
+            $submittedDocumentNames = $program->documents->pluck('name');
+
+            $matrix = $allCriteria->map(function ($criterion) use ($submittedDocumentNames) {
+                $isCompliant = $submittedDocumentNames->contains($criterion->document_type_needed);
+                return [
+                    'id' => $criterion->id,
+                    'section' => $criterion->section,
+                    'criterion_code' => $criterion->criterion_code,
+                    'description' => $criterion->description,
+                    'document_needed' => $criterion->document_type_needed,
+                    'status' => $isCompliant ? 'Compliant' : 'Missing',
+                    'submitted_document' => $isCompliant ? $criterion->document_type_needed : null,
+                ];
+            });
+
+            return response()->json($matrix);
+
+        } catch (\Exception $e) {
+            Log::error('FATAL ERROR in ComplianceController for Program ID ' . $program->id . ': ' . $e->getMessage() . ' on line ' . $e->getLine() . ' in ' . $e->getFile());
+            return response()->json(['message' => 'A critical error occurred on the server while generating the compliance matrix.'], 500);
+        }
+    }
+}

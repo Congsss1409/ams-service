@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,7 +16,13 @@ class DocumentController extends Controller
      */
     public function index(Program $program)
     {
-        return response()->json($program->documents);
+        try {
+            // Eager load the documents to prevent issues
+            return response()->json($program->load('documents')->documents);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch documents for program ' . $program->id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while fetching documents.'], 500);
+        }
     }
 
     /**
@@ -24,18 +31,17 @@ class DocumentController extends Controller
     public function store(Request $request, Program $program)
     {
         $validator = Validator::make($request->all(), [
-            'document' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:10240', // 10MB Max
+            'document' => 'required|file|mimes:pdf,doc,docx,jpg,png,zip|max:20480', // 20MB Max
             'section' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $file = $request->file('document');
         $originalName = $file->getClientOriginalName();
         
-        // Store the file in 'storage/app/documents/{program_id}'
         $path = $file->store('documents/' . $program->id);
 
         $document = $program->documents()->create([
@@ -52,12 +58,13 @@ class DocumentController extends Controller
      */
     public function destroy(Document $document)
     {
-        // Delete the file from storage
-        Storage::delete($document->path);
-
-        // Delete the record from the database
-        $document->delete();
-
-        return response()->json(null, 204);
+        try {
+            Storage::delete($document->path);
+            $document->delete();
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete document ' . $document->id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while deleting the document.'], 500);
+        }
     }
 }
