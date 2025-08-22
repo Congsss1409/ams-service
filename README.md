@@ -1,6 +1,6 @@
 # School Management System III - Accreditation Module
 
-![School Management System Logo](https://i.imgur.com/your-logo-id.png) 
+
 
 A comprehensive, web-based School Management System designed to modernize and streamline the core operations of an educational institution, with a primary focus on managing the complex process of accreditation.
 
@@ -12,7 +12,7 @@ This repository contains the central **Accreditation Management System (AMS)** a
 
 This project was built by 4th-year IT students to solve the real-world challenge of preparing for school accreditation, based on the processes of Bestlink College of the Philippines.
 
-![Login Page Screenshot](https://i.imgur.com/your-login-screenshot-id.png)
+![Login Page Screenshot]([https://imgur.com/h86Vmlr](https://i.postimg.cc/sXGYxXTm/image.png))
 
 ### ✨ Features
 
