@@ -6,7 +6,7 @@ As a team of 4th-year IT students, we developed this comprehensive, web-based Sc
 
 ## 📖 About Our Project
 
-In this repository, you'll find the central **Accreditation Management System (AMS)** that we created for our capstone project, the School Management System III. We designed it as a stand-alone microservice to act as the "brain" of the entire system. It's capable of integrating with nine other operational modules, providing a centralized hub for managing accreditation documents, tracking compliance, and performing high-level analytics.
+In this repository, you'll find the central **Accreditation Management System (AMS)** that we created for our capstone project, the School Management System III. We designed it as a stand-alone microservice. It's capable of integrating with nine other operational modules, providing a centralized hub for managing accreditation documents, tracking compliance, and performing high-level analytics.
 
 We built this project to solve the real-world challenges of preparing for school accreditation, basing our work on the actual processes of Bestlink College of the Philippines.
 
