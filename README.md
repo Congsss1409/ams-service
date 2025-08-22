@@ -12,8 +12,7 @@ This repository contains the central **Accreditation Management System (AMS)** a
 
 This project was built by 4th-year IT students to solve the real-world challenge of preparing for school accreditation, based on the processes of Bestlink College of the Philippines.
 
-![Login Page Screenshot]([![image.png](https://i.postimg.cc/sXGYxXTm/image.png)](https://postimg.cc/xJYJF0DN))
-
+![Login Page Screenshot][![image.png](https://i.postimg.cc/sXGYxXTm/image.png)](https://postimg.cc/xJYJF0DN)
 ### ✨ Features
 
 * **Secure Authentication:** A complete login and registration system using Laravel Sanctum.
