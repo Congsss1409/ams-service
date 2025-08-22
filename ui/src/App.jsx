@@ -303,6 +303,13 @@ function ProgramManagementPage({ token, onLogout }) {
         
         const method = currentProgram.id ? 'PUT' : 'POST';
 
+        // **FIX:** Create a payload with only the fields the backend expects.
+        const payload = {
+            name: currentProgram.name,
+            accreditation_level: currentProgram.accreditation_level,
+            status: currentProgram.status,
+        };
+
         try {
             const response = await fetch(url, {
                 method: method,
@@ -311,7 +318,7 @@ function ProgramManagementPage({ token, onLogout }) {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify(currentProgram)
+                body: JSON.stringify(payload) // <-- Use the cleaned payload
             });
             if (!response.ok) throw new Error('Failed to save program.');
             fetchPrograms(); // Refresh the list

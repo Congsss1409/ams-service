@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProgramController;
 
 /*
@@ -21,6 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Route for getting all accreditation programs
-    Route::get('/programs', [ProgramController::class, 'index']);
+    // Routes for Program Management
+    Route::apiResource('programs', ProgramController::class);
+
+    // Routes for Document Management (nested under programs)
+    Route::get('/programs/{program}/documents', [DocumentController::class, 'index']);
+    Route::post('/programs/{program}/documents', [DocumentController::class, 'store']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
 });
