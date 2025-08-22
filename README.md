@@ -1,34 +1,33 @@
-# School Management System III - Accreditation Module
+# School Management System III - Accreditation Management System
 
-A comprehensive, web-based School Management System designed to modernize and streamline the core operations of an educational institution, with a primary focus on managing the complex process of accreditation. This system features a predictive compliance gap analysis to provide actionable insights for school leadership.
+As a team of 4th-year IT students, we developed this comprehensive, web-based School Management System to modernize and streamline the core operations of an educational institution. Our primary focus was to tackle the complex process of accreditation, and we've built-in a PREDICTIVE GAP COMPLIANCE ANALYSIS feature to provide real, actionable insights for school leadership.
 
 ---
 
-## 📖 About The Project
+## 📖 About Our Project
 
-This repository contains the central **Accreditation Management System (AMS)** for the School Management System III capstone project. Developed as a stand-alone microservice, its primary role is to act as the "brain" of the entire system, capable of integrating with other operational modules to provide a centralized hub for accreditation document management, compliance tracking, and high-level analytics.
+In this repository, you'll find the central **Accreditation Management System (AMS)** that we created for our capstone project, the School Management System III. We designed it as a stand-alone microservice to act as the "brain" of the entire system. It's capable of integrating with nine other operational modules, providing a centralized hub for managing accreditation documents, tracking compliance, and performing high-level analytics.
 
-This project was built by 4th-year IT students to solve the real-world challenge of preparing for school accreditation, based on the processes of Bestlink College of the Philippines.
+We built this project to solve the real-world challenges of preparing for school accreditation, basing our work on the actual processes of Bestlink College of the Philippines.
 
 ![Dashboard Screenshot][![image.png](https://i.postimg.cc/L4GTYh0G/image.png)](https://postimg.cc/z3SW4DNk)
 
+### ✨ What We've Built (Features)
 
-### ✨ Features
+Our system is feature-complete with all the core modules we planned for accreditation management:
 
-This system is feature-complete with all the core modules required for accreditation management:
-
-* **Secure Authentication & User Management:** A complete login system using Laravel Sanctum, with a full CRUD interface for administrators to manage user accounts.
-* **Dynamic Dashboard & Predictive Gap Analysis:** An interactive dashboard that provides a high-level overview of the compliance status for all academic programs, predicting which are "On Track," "Need Attention," or are "At Risk."
-* **Program Management:** A full CRUD interface to manage academic programs and their current accreditation levels.
-* **Centralized Document Repository:** Functionality for uploading, viewing, and managing accreditation documents, organized by program and the 9 required accreditation sections.
-* **Compliance Matrix:** A dynamic matrix that tracks the completion status of required documents against predefined accreditation criteria for any selected program.
-* **Modern UI/UX:** A professional and responsive user interface built with React and Bootstrap, featuring a collapsible sidebar and interactive alerts with SweetAlert2.
+* **Secure Authentication & User Management:** We implemented a complete login system using Laravel Sanctum, along with a full CRUD interface for administrators to manage user accounts.
+* **Dynamic Dashboard & Predictive Gap Analysis:** We created an interactive dashboard that gives a high-level overview of the compliance status for all academic programs, predicting which are "On Track," "Need Attention," or are "At Risk."
+* **Program Management:** We built a full CRUD interface to manage academic programs and their current accreditation levels.
+* **Centralized Document Repository:** Our system allows for uploading, viewing, and managing accreditation documents, all organized by program and the 9 required accreditation sections.
+* **Compliance Matrix:** We developed a dynamic matrix that tracks the completion status of required documents against the predefined accreditation criteria for any selected program.
+* **Modern UI/UX:** We designed a professional and responsive user interface with React and Bootstrap, which includes a collapsible sidebar and interactive alerts using SweetAlert2.
 
 ---
 
-## 🛠️ Built With
+## 🛠️ The Tech We Used
 
-This project is built on a modern, robust technology stack, containerized for consistency and ease of development.
+We built our project using a modern, robust technology stack and containerized it with Docker for consistency and ease of development.
 
 * **Backend:** PHP / Laravel
 * **Frontend:** JavaScript / React.js
@@ -40,11 +39,11 @@ This project is built on a modern, robust technology stack, containerized for co
 
 ## 🚀 Getting Started
 
-To get a local copy up and running, follow these simple steps.
+To get a local copy of our project up and running, just follow these simple steps.
 
 ### Prerequisites
 
-You will need the following software installed on your machine:
+You'll need the following software installed on your machine:
 * [Git](https://git-scm.com/)
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
@@ -69,7 +68,7 @@ You will need the following software installed on your machine:
     ```sh
     docker-compose up -d --build
     ```
-5.  **Install Backend Dependencies** (using the dedicated composer container)
+5.  **Install Backend Dependencies** (using our dedicated composer container)
     ```sh
     docker-compose run --rm composer install
     ```
@@ -87,12 +86,12 @@ You will need the following software installed on your machine:
     npm run dev
     ```
 
-Your application should now be running!
+Our application should now be running!
 * **Backend API:** `http://localhost:8000`
 * **Frontend UI:** `http://localhost:5173`
 * **Default Admin Login:** `admin@example.com` / `password`
 
 ---
-## 🗺️ System Architecture
+## 🗺️ Our System Architecture
 
-Our School Management System is built on a microservices architecture. This `ams-service` acts as the central accreditation and reporting hub, designed to communicate with other modules (like Faculty Management, SIS, etc.) via a robust API. This separation of concerns allows for modular development and scalability.
+We designed our School Management System using a microservices architecture. This `ams-service` acts as the central hub for accreditation and reporting. We built it to communicate with other modules (like Faculty Management, SIS, etc.) through a robust API, a design choice that allows for modular development and makes the whole system easier to scale.
