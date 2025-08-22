@@ -11,7 +11,7 @@ This repository contains the central **Accreditation Management System (AMS)** f
 This project was built by 4th-year IT students to solve the real-world challenge of preparing for school accreditation, based on the processes of Bestlink College of the Philippines.
 
 ![Dashboard Screenshot][![image.png](https://i.postimg.cc/L4GTYh0G/image.png)](https://postimg.cc/z3SW4DNk)
-*(Note: Please replace the link above with a new screenshot of your dashboard page)*
+
 
 ### ✨ Features
 
