@@ -7,6 +7,9 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\GapAnalysisController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuditScheduleController;
+use App\Http\Controllers\VisitController; // <-- Add this line
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,4 +34,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Gap Analysis Route
     Route::get('/gap-analysis/overall-status', [GapAnalysisController::class, 'getOverallStatus']);
+
+    // User Management Route
+    Route::apiResource('users', UserController::class);
+
+    // Audit Schedule Route
+    Route::apiResource('audit-schedules', AuditScheduleController::class);
+
+    // Accreditor Visit Route
+    Route::apiResource('visits', VisitController::class); // <-- Add this line
 });

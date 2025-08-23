@@ -19,5 +19,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(ComplianceCriteriaSeeder::class);
+        $this->call(ProgramSeeder::class);
     }
 }
