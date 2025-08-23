@@ -16,9 +16,11 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
+            'role' => 'Admin',
         ]);
 
         $this->call(ComplianceCriteriaSeeder::class);
         $this->call(ProgramSeeder::class);
+        $this->call(DocumentSeeder::class); // <-- Add this line
     }
 }

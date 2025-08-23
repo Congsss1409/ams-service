@@ -650,6 +650,104 @@ function AuditSchedulePage({ token }) {
     </div>);
 }
 
+function AccreditorVisitPage({ token }) {
+    const [visits, setVisits] = useState([]);
+    const [programs, setPrograms] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [currentVisit, setCurrentVisit] = useState(null);
+
+    const fetchVisits = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/visits', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Failed to fetch accreditor visits.');
+            const data = await response.json();
+            setVisits(data);
+        } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+    };
+
+    const fetchPrograms = async () => {
+        try {
+            const response = await fetch('http://localhost:8000/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Failed to fetch programs for visits.');
+            const data = await response.json();
+            setPrograms(data);
+        } catch (err) { console.error(err.message); }
+    };
+
+    useEffect(() => {
+        fetchVisits();
+        fetchPrograms();
+    }, [token]);
+
+    const handleShowModal = (visit = null) => {
+        setCurrentVisit(visit || { program_id: programs[0]?.id || '', accreditor_name: '', visit_date: '', status: 'Planned', notes: '' });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => setShowModal(false);
+
+    const handleSaveVisit = async () => {
+        setIsSaving(true);
+        const url = currentVisit.id ? `http://localhost:8000/api/visits/${currentVisit.id}` : 'http://localhost:8000/api/visits';
+        const method = currentVisit.id ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentVisit) });
+            const data = await response.json();
+            if (!response.ok) {
+                if(data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); }
+                throw new Error(data.message || 'Failed to save visit.');
+            }
+            fetchVisits();
+            handleCloseModal();
+            window.Swal.fire('Success!', 'Accreditor visit saved successfully.', 'success');
+        } catch (err) { window.Swal.fire('Error!', err.message, 'error'); } finally { setIsSaving(false); }
+    };
+
+    const handleDeleteVisit = (visitId) => {
+        window.Swal.fire({ title: 'Are you sure?', text: "This action is final!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Yes, delete it!' })
+            .then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`http://localhost:8000/api/visits/${visitId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (!response.ok) throw new Error('Failed to delete visit.');
+                        fetchVisits();
+                        window.Swal.fire('Deleted!', 'The accreditor visit has been deleted.', 'success');
+                    } catch (err) { window.Swal.fire('Error!', err.message, 'error'); }
+                }
+            });
+    };
+
+    const getStatusBadge = (status) => {
+        switch(status) {
+            case 'Completed': return 'success';
+            case 'Confirmed': return 'primary';
+            case 'Planned': return 'secondary';
+            default: return 'light';
+        }
+    };
+
+    return (<div className="content-card">
+        <div className="d-flex justify-content-between align-items-center mb-4"><h1>Accreditor Visits</h1><Button onClick={() => handleShowModal()} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-calendar-plus me-2"></i> Log Visit</Button></div>
+        {isLoading ? <div className="text-center p-5"><Spinner animation="border" /></div> : error ? <Alert variant="danger">{error}</Alert> :
+            <Table striped bordered hover responsive><thead><tr><th>Program</th><th>Accreditor Name</th><th>Visit Date</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
+                <tbody>{visits.map(visit => <tr key={visit.id}><td>{visit.program?.name || 'N/A'}</td><td>{visit.accreditor_name}</td><td>{visit.visit_date}</td><td><Badge bg={getStatusBadge(visit.status)}>{visit.status}</Badge></td><td>{visit.notes}</td><td><Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(visit)}><i className="bi bi-pencil-square"></i> Edit</Button><Button variant="outline-danger" size="sm" onClick={() => handleDeleteVisit(visit.id)}><i className="bi bi-trash"></i> Delete</Button></td></tr>)}</tbody>
+            </Table>}
+        {currentVisit && <Modal show={showModal} onHide={handleCloseModal}><Modal.Header closeButton><Modal.Title>{currentVisit.id ? 'Edit Accreditor Visit' : 'Log New Accreditor Visit'}</Modal.Title></Modal.Header><Modal.Body><Form>
+            <Form.Group className="mb-3"><Form.Label>Program</Form.Label><Form.Select defaultValue={currentVisit.program_id} onChange={(e) => setCurrentVisit({ ...currentVisit, program_id: e.target.value })} required>{programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</Form.Select></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Accreditor Name</Form.Label><Form.Control type="text" defaultValue={currentVisit.accreditor_name} onChange={(e) => setCurrentVisit({ ...currentVisit, accreditor_name: e.target.value })} required /></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Visit Date</Form.Label><Form.Control type="date" defaultValue={currentVisit.visit_date} onChange={(e) => setCurrentVisit({ ...currentVisit, visit_date: e.target.value })} required /></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Status</Form.Label><Form.Select defaultValue={currentVisit.status} onChange={(e) => setCurrentVisit({ ...currentVisit, status: e.target.value })} required><option value="Planned">Planned</option><option value="Confirmed">Confirmed</option><option value="Completed">Completed</option></Form.Select></Form.Group>
+            <Form.Group className="mb-3"><Form.Label>Notes</Form.Label><Form.Control as="textarea" rows={3} defaultValue={currentVisit.notes || ''} onChange={(e) => setCurrentVisit({ ...currentVisit, notes: e.target.value })} /></Form.Group>
+        </Form></Modal.Body><Modal.Footer><Button variant="secondary" onClick={handleCloseModal}>Close</Button><Button variant="primary" onClick={handleSaveVisit} disabled={isSaving} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}>{isSaving ? <Spinner as="span" size="sm" /> : 'Save Changes'}</Button></Modal.Footer></Modal>}
+    </div>);
+}
+
+
 // --- Main Dashboard Layout ---
 function DashboardLayout({ onLogout, token }) {
     const [user, setUser] = useState(null);
@@ -684,6 +782,7 @@ function DashboardLayout({ onLogout, token }) {
             case 'DOCUMENTS': return <DocumentManagementPage program={selectedProgram} token={token} onBack={handleBackToPrograms} />;
             case 'COMPLIANCE': return <ComplianceMatrixPage token={token} />;
             case 'AUDIT_SCHEDULE': return <AuditSchedulePage token={token} />;
+            case 'ACCREDITOR_VISIT': return <AccreditorVisitPage token={token} />;
             case 'USERS': return <UserManagementPage token={token} currentUser={user} />;
             case 'PROFILE': return <ProfilePage user={user} token={token} onUserUpdate={handleUserUpdate} />;
             default: return <DashboardHomepage token={token} />;
