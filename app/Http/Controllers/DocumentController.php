@@ -42,11 +42,14 @@ class DocumentController extends Controller
         $file = $request->file('document');
         $originalName = $file->getClientOriginalName();
         
+        // The fix is here: We now get the filename without its extension.
+        $nameWithoutExtension = pathinfo($originalName, PATHINFO_FILENAME);
+
         // Specify the 'public' disk for storage.
         $path = $file->store('documents/' . $program->id, 'public');
 
         $document = $program->documents()->create([
-            'name' => $originalName,
+            'name' => $nameWithoutExtension, // Use the name without the extension.
             'path' => $path,
             'section' => $request->section,
         ]);

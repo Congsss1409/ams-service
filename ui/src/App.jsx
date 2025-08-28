@@ -348,6 +348,7 @@ function DocumentManagementPage({ program, token, onBack }) {
     const [error, setError] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedSection, setSelectedSection] = useState('1');
+    const getDocumentUrl = (path) => `http://localhost:8000/storage/${path}`;
     const fetchDocuments = async () => {
         if (!program) return;
         setIsLoading(true);
@@ -404,7 +405,14 @@ function DocumentManagementPage({ program, token, onBack }) {
                     const sectionDocs = groupedDocuments[sectionNum] || [];
                     return (<Col md={6} lg={4} key={sectionNum} className="mb-4"><Card>
                         <Card.Header as="h6">Section {sectionNum}</Card.Header>
-                        <ListGroup variant="flush">{sectionDocs.length > 0 ? sectionDocs.map(doc => <ListGroup.Item key={doc.id} className="d-flex justify-content-between align-items-center"><span><i className="bi bi-file-earmark-text me-2"></i>{doc.name}</span><Button variant="outline-danger" size="sm" onClick={() => handleDelete(doc.id)}><i className="bi bi-trash"></i></Button></ListGroup.Item>) : <ListGroup.Item className="text-muted">No documents uploaded.</ListGroup.Item>}
+                        <ListGroup variant="flush">{sectionDocs.length > 0 ? sectionDocs.map(doc => 
+                            <ListGroup.Item key={doc.id} className="d-flex justify-content-between align-items-center">
+                                <a href={getDocumentUrl(doc.path)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    <i className="bi bi-file-earmark-text me-2"></i>{doc.name}
+                                </a>
+                                <Button variant="outline-danger" size="sm" onClick={() => handleDelete(doc.id)}><i className="bi bi-trash"></i></Button>
+                            </ListGroup.Item>
+                        ) : <ListGroup.Item className="text-muted">No documents uploaded.</ListGroup.Item>}
                         </ListGroup></Card></Col>);
                 })}</Row>}
         </div>

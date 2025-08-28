@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ComplianceCriterion;
 use App\Models\Program;
-use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +12,6 @@ class ComplianceController extends Controller
     public function getComplianceMatrix(Program $program)
     {
         try {
-            $program->load('documents'); 
             $allCriteria = ComplianceCriterion::all();
             
             if ($allCriteria->isEmpty()) {
@@ -21,10 +19,14 @@ class ComplianceController extends Controller
                 return response()->json([]);
             }
             
-            $submittedDocumentNames = $program->documents->pluck('name');
+            $matrix = $allCriteria->map(function ($criterion) use ($program) {
+                // This is the new, more reliable logic.
+                // It directly checks the database to see if a document with the
+                // exact required name exists for the current program.
+                $isCompliant = $program->documents()
+                                       ->where('name', $criterion->document_type_needed)
+                                       ->exists();
 
-            $matrix = $allCriteria->map(function ($criterion) use ($submittedDocumentNames) {
-                $isCompliant = $submittedDocumentNames->contains($criterion->document_type_needed);
                 return [
                     'id' => $criterion->id,
                     'section' => $criterion->section,
