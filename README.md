@@ -1,97 +1,147 @@
-# School Management System III - Accreditation Management System
+School Management System III - Accreditation Management System (AMS)
+About The Project
+The Accreditation Management System (AMS) is a comprehensive web application designed to streamline the accreditation process for educational institutions. It provides a centralized platform for managing academic programs, organizing accreditation documents, monitoring compliance with standards, and scheduling important events like internal audits and accreditor visits.
 
-As a team of 4th-year IT students, we developed this comprehensive, web-based School Management System to modernize and streamline the core operations of an educational institution. Our primary focus was to tackle the complex process of accreditation, and we've built-in a PREDICTIVE GAP COMPLIANCE ANALYSIS feature to provide real, actionable insights for school leadership.
+This system is built as a capstone project to demonstrate a robust, scalable, and user-friendly solution for modern academic management.
 
----
+Key Features
+Dashboard: An at-a-glance overview of the compliance status of all academic programs.
 
-## 📖 About Our Project
+Program Management: Add, edit, and manage all academic programs undergoing accreditation.
 
-In this repository, you'll find the central **Accreditation Management System (AMS)** that we created for our capstone project, the School Management System III. We designed it as a stand-alone microservice. It's capable of integrating with nine other operational modules, providing a centralized hub for managing accreditation documents, tracking compliance, and performing high-level analytics.
+Document Repository: A centralized and organized storage for all accreditation-related documents, categorized by section.
 
-We built this project to solve the real-world challenges of preparing for school accreditation, basing our work on the actual processes of Bestlink College of the Philippines.
+Compliance Matrix: Track and verify compliance for each program against a predefined set of accreditation criteria.
 
-![Dashboard Screenshot][![image.png](https://i.postimg.cc/L4GTYh0G/image.png)](https://postimg.cc/z3SW4DNk)
+Internal Audit Scheduler: Plan and manage the schedule for internal audits.
 
-### ✨ What We've Built (Features)
+Accreditor Visit Management: Log and track scheduled visits from external accreditors.
 
-Our system is feature-complete with all the core modules we planned for accreditation management:
+User Management: Manage user accounts and their access to the system.
 
-* **Secure Authentication & User Management:** We implemented a complete login system using Laravel Sanctum, along with a full CRUD interface for administrators to manage user accounts.
-* **Dynamic Dashboard & Predictive Gap Analysis:** We created an interactive dashboard that gives a high-level overview of the compliance status for all academic programs, predicting which are "On Track," "Need Attention," or are "At Risk."
-* **Program Management:** We built a full CRUD interface to manage academic programs and their current accreditation levels.
-* **Centralized Document Repository:** Our system allows for uploading, viewing, and managing accreditation documents, all organized by program and the 9 required accreditation sections.
-* **Compliance Matrix:** We developed a dynamic matrix that tracks the completion status of required documents against the predefined accreditation criteria for any selected program.
-* **Modern UI/UX:** We designed a professional and responsive user interface with React and Bootstrap, which includes a collapsible sidebar and interactive alerts using SweetAlert2.
+Built With
+Backend: Laravel
 
----
+Frontend: React (with Vite)
 
-## 🛠️ The Tech We Used
+Database: MySQL
 
-We built our project using a modern, robust technology stack and containerized it with Docker for consistency and ease of development.
+Styling: React Bootstrap & Bootstrap Icons
 
-* **Backend:** PHP / Laravel
-* **Frontend:** JavaScript / React.js
-* **Database:** MySQL
-* **Styling:** Bootstrap / React Bootstrap
-* **Containerization:** Docker & Docker Compose
+Getting Started (XAMPP Environment)
+This guide will walk you through setting up the project on your local machine using XAMPP.
 
----
+Prerequisites
+Before you begin, ensure you have the following software installed on your computer:
 
-## 🚀 Getting Started
+XAMPP: Provides Apache, MySQL, and PHP.
 
-To get a local copy of our project up and running, just follow these simple steps.
+Composer: A dependency manager for PHP.
 
-### Prerequisites
+Node.js: A JavaScript runtime environment (v18 or higher recommended).
 
-You'll need the following software installed on your machine:
-* [Git](https://git-scm.com/)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+Installation
+Follow these steps to get your development environment running.
 
-### Installation & Setup
+1. Set Up the Laravel Backend
+First, we will configure and set up the backend application.
 
-1.  **Clone the repo**
-    ```sh
-    git clone [https://github.com/your-username/ams-service.git](https://github.com/your-username/ams-service.git)
-    cd ams-service
-    ```
-2.  **Create your environment file**
-    ```sh
-    cp .env.example .env
-    ```
-3.  **Install Frontend Dependencies**
-    ```sh
-    cd ui
-    npm install
-    cd ..
-    ```
-4.  **Build and Run the Docker Containers**
-    ```sh
-    docker-compose up -d --build
-    ```
-5.  **Install Backend Dependencies** (using our dedicated composer container)
-    ```sh
-    docker-compose run --rm composer install
-    ```
-6.  **Generate Application Key**
-    ```sh
-    docker-compose exec app php artisan key:generate
-    ```
-7.  **Run Database Migrations & Seeding**
-    ```sh
-    docker-compose exec app php artisan migrate:fresh --seed
-    ```
-8.  **Start the Frontend Development Server** (in a new terminal)
-    ```sh
-    cd ui
-    npm run dev
-    ```
+Place Project in htdocs Move the entire project folder into your XAMPP htdocs directory (e.g., C:/xampp/htdocs/ams-service).
 
-Our application should now be running!
-* **Backend API:** `http://localhost:8000`
-* **Frontend UI:** `http://localhost:5173`
-* **Default Admin Login:** `admin@example.com` / `password`
+Create the Database
 
----
-## 🗺️ Our System Architecture
+Start the Apache and MySQL services from the XAMPP Control Panel.
 
-We designed our School Management System using a microservices architecture. This `ams-service` acts as the central hub for accreditation and reporting. We built it to communicate with other modules (like Faculty Management, SIS, etc.) through a robust API, a design choice that allows for modular development and makes the whole system easier to scale.
+Open phpMyAdmin by clicking the Admin button next to MySQL.
+
+Create a new database and name it ams_db.
+
+Configure Environment File
+
+In the project root, create a copy of the .env.example file and rename it to .env.
+
+Open the .env file and update the database credentials. The password for the root user in XAMPP is typically empty.
+
+Code snippet
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ams_db
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Ensure this is set for the frontend
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+Install Dependencies & Prepare App
+
+Open a terminal and navigate to the project's root directory:
+
+Bash
+
+cd C:/xampp/htdocs/ams-service
+Run the following commands one by one:
+
+Bash
+
+# Install PHP dependencies
+composer install
+
+# Generate a unique application key
+php artisan key:generate
+
+# Run database migrations and seed the database with default data
+php artisan migrate:fresh --seed
+
+# Create the symbolic link for file storage
+php artisan storage:link
+2. Set Up the React Frontend
+Now, let's get the user interface running. You will need a second, separate terminal for this part.
+
+Navigate to the ui Directory
+
+Open a new terminal and navigate into the ui folder:
+
+Bash
+
+cd C:/xampp/htdocs/ams-service/ui
+Install Frontend Dependencies
+
+Run the following command to install all the necessary JavaScript packages:
+
+Bash
+
+npm install
+Running the Application
+To run the application, you need to start both the backend and frontend servers.
+
+Start the Laravel Backend Server
+
+In your first terminal (at the project root), run:
+
+Bash
+
+php artisan serve
+This will start the backend API server, usually at http://localhost:8000.
+
+Start the React Frontend Server
+
+In your second terminal (inside the ui directory), run:
+
+Bash
+
+npm run dev
+This will start the frontend development server, usually at http://localhost:5173.
+
+Accessing the Application
+Your Accreditation Management System is now running!
+
+Open your browser and go to: http://localhost:5173
+
+Login with the default administrator credentials:
+
+Email: admin@example.com
+
+Password: password
+
+You must keep both terminal windows open to continue running the application.
