@@ -30,7 +30,7 @@ class DocumentSeeder extends Seeder
                 Document::create([
                     'program_id' => $bsit->id,
                     'name' => $criterion->document_type_needed,
-                    'path' => '/documents/dummy.pdf',
+                    'path' => 'seeded_documents/dummy.pdf', // Corrected path
                     'section' => $criterion->section,
                 ]);
             }
@@ -43,7 +43,7 @@ class DocumentSeeder extends Seeder
                 Document::create([
                     'program_id' => $bsba->id,
                     'name' => $criterion->document_type_needed,
-                    'path' => '/documents/dummy.pdf',
+                    'path' => 'seeded_documents/dummy.pdf', // Corrected path
                     'section' => $criterion->section,
                 ]);
             }
@@ -57,7 +57,7 @@ class DocumentSeeder extends Seeder
                 Document::create([
                     'program_id' => $beed->id,
                     'name' => $criterion->document_type_needed,
-                    'path' => '/documents/dummy.pdf',
+                    'path' => 'seeded_documents/dummy.pdf', // Corrected path
                     'section' => $criterion->section,
                 ]);
             }

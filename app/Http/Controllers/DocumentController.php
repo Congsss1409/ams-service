@@ -42,7 +42,8 @@ class DocumentController extends Controller
         $file = $request->file('document');
         $originalName = $file->getClientOriginalName();
         
-        $path = $file->store('documents/' . $program->id);
+        // Specify the 'public' disk for storage.
+        $path = $file->store('documents/' . $program->id, 'public');
 
         $document = $program->documents()->create([
             'name' => $originalName,
@@ -59,7 +60,8 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         try {
-            Storage::delete($document->path);
+            // Specify the 'public' disk when deleting the file.
+            Storage::disk('public')->delete($document->path);
             $document->delete();
             return response()->json(null, 204);
         } catch (\Exception $e) {
