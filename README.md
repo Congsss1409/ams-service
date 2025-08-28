@@ -1,147 +1,145 @@
-School Management System III - Accreditation Management System (AMS)
-About The Project
-The Accreditation Management System (AMS) is a comprehensive web application designed to streamline the accreditation process for educational institutions. It provides a centralized platform for managing academic programs, organizing accreditation documents, monitoring compliance with standards, and scheduling important events like internal audits and accreditor visits.
+<div align="center">
+  <img src="https://i.postimg.cc/sXGYxXTm/image.png" alt="School Logo" width="150"/>
+  <h1>School Management System III</h1>
+  <h2>🎓 Accreditation Management System (AMS) 🎓</h2>
+  <p>
+    A comprehensive, web-based platform designed to modernize and streamline the complex process of school accreditation. Built with Laravel and React.
+  </p>
+</div>
 
-This system is built as a capstone project to demonstrate a robust, scalable, and user-friendly solution for modern academic management.
+---
 
-Key Features
-Dashboard: An at-a-glance overview of the compliance status of all academic programs.
+### 🚀 About The Project
 
-Program Management: Add, edit, and manage all academic programs undergoing accreditation.
+Welcome to the **Accreditation Management System (AMS)**, the central hub of our capstone project, the School Management System III. We developed this system to solve the real-world challenges of preparing for school accreditation, inspired by the processes at Bestlink College of the Philippines.
 
-Document Repository: A centralized and organized storage for all accreditation-related documents, categorized by section.
+Our system provides a powerful suite of tools for school administrators to manage documents, track compliance against standards, and gain actionable insights through a predictive gap analysis dashboard.
 
-Compliance Matrix: Track and verify compliance for each program against a predefined set of accreditation criteria.
+### ✨ Core Features
 
-Internal Audit Scheduler: Plan and manage the schedule for internal audits.
+| Feature                  | Description                                                                                              | Icon                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **Dynamic Dashboard** | Get a high-level overview of compliance status across all academic programs with predictive analytics.   | 📊                          |
+| **Program Management** | A full CRUD interface to manage academic programs and their current accreditation levels.                | 📚                          |
+| **Document Repository** | Upload, view, and manage accreditation documents, organized by program and the 9 required sections.      | 📂                          |
+| **Compliance Matrix** | Dynamically track the completion status of required documents against predefined criteria.               | ✅                          |
+| **Audit & Visit Scheduling** | Plan, schedule, and manage internal audits and visits from external accreditors.                         | 📅                          |
+| **User Management** | Securely manage user accounts and profiles with a complete authentication system via Laravel Sanctum.      | 👥                          |
 
-Accreditor Visit Management: Log and track scheduled visits from external accreditors.
+### 🛠️ Tech Stack
 
-User Management: Manage user accounts and their access to the system.
+This project is built with a modern, robust, and scalable technology stack.
 
-Built With
-Backend: Laravel
+| Area      | Technology                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Backend** | <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel"/> <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP"/>                                                                                                                                                             |
+| **Frontend** | <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"/> <img src="https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap"/>                                 |
+| **Database** | <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"/>                                                                                                                                                                                                                                                                               |
 
-Frontend: React (with Vite)
+---
 
-Database: MySQL
+## 🚀 Getting Started (XAMPP Local Setup)
 
-Styling: React Bootstrap & Bootstrap Icons
+This guide will walk you through setting up the project on your local machine using **XAMPP**.
 
-Getting Started (XAMPP Environment)
-This guide will walk you through setting up the project on your local machine using XAMPP.
+### Prerequisites
 
-Prerequisites
-Before you begin, ensure you have the following software installed on your computer:
+Make sure you have the following software installed before you begin:
 
-XAMPP: Provides Apache, MySQL, and PHP.
+* **[XAMPP](https://www.apachefriends.org/index.html):** Provides your Apache server, MySQL database, and PHP environment.
+* **[Composer](https://getcomposer.org/):** The dependency manager for PHP.
+* **[Node.js](https://nodejs.org/):** The JavaScript runtime needed for the React frontend (v18+ recommended).
 
-Composer: A dependency manager for PHP.
+### Installation Guide
 
-Node.js: A JavaScript runtime environment (v18 or higher recommended).
+Follow these steps carefully to get your development environment up and running.
 
-Installation
-Follow these steps to get your development environment running.
+#### ⚙️ Part 1: Configure the Backend (Laravel)
 
-1. Set Up the Laravel Backend
-First, we will configure and set up the backend application.
+1.  **Place Project Files**
+    * Move the entire `ams-service` project folder into your XAMPP `htdocs` directory (e.g., `C:/xampp/htdocs/ams-service`).
 
-Place Project in htdocs Move the entire project folder into your XAMPP htdocs directory (e.g., C:/xampp/htdocs/ams-service).
+2.  **Create the Database**
+    * Start the **Apache** and **MySQL** services from the XAMPP Control Panel.
+    * Open phpMyAdmin (click `Admin` next to MySQL).
+    * Create a new, empty database and name it `ams_db`.
 
-Create the Database
+3.  **Set Up Environment Variables**
+    * In the project root, find the `.env.example` file and create a copy named `.env`.
+    * Open the new `.env` file and update the database section to match your XAMPP setup (the password is usually blank).
 
-Start the Apache and MySQL services from the XAMPP Control Panel.
+    ```env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=ams_db
+    DB_USERNAME=root
+    DB_PASSWORD=
 
-Open phpMyAdmin by clicking the Admin button next to MySQL.
+    CORS_ALLOWED_ORIGINS=http://localhost:5173
+    ```
 
-Create a new database and name it ams_db.
+4.  **Install Dependencies & Prepare the App**
+    * Open a terminal and navigate to your project's root directory:
+        ```bash
+        cd C:/xampp/htdocs/ams-service
+        ```
+    * Run these commands one by one to install dependencies and set up the application:
+        ```bash
+        # Install all required PHP packages
+        composer install
 
-Configure Environment File
+        # Generate a unique application key
+        php artisan key:generate
 
-In the project root, create a copy of the .env.example file and rename it to .env.
+        # Create the database tables and fill them with initial data
+        php artisan migrate:fresh --seed
 
-Open the .env file and update the database credentials. The password for the root user in XAMPP is typically empty.
+        # Link the public storage directory
+        php artisan storage:link
+        ```
 
-Code snippet
+#### 🎨 Part 2: Configure the Frontend (React)
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=ams_db
-DB_USERNAME=root
-DB_PASSWORD=
+You'll need a **second, separate terminal** for these steps.
 
-# Ensure this is set for the frontend
-CORS_ALLOWED_ORIGINS=http://localhost:5173
-Install Dependencies & Prepare App
+1.  **Navigate to the `ui` Directory**
+    * Open a new terminal and navigate into the `ui` sub-directory:
+        ```bash
+        cd C:/xampp/htdocs/ams-service/ui
+        ```
 
-Open a terminal and navigate to the project's root directory:
+2.  **Install Frontend Dependencies**
+    * Run the following command to install all the necessary JavaScript packages:
+        ```bash
+        npm install
+        ```
 
-Bash
+### ▶️ Running the Application
 
-cd C:/xampp/htdocs/ams-service
-Run the following commands one by one:
+To run the system, you need to start both the backend and frontend servers.
 
-Bash
+1.  **Start the Backend Server**
+    * In your **first terminal** (at the project root), run:
+        ```bash
+        php artisan serve
+        ```
+    * This will start the Laravel API, usually on `http://localhost:8000`.
 
-# Install PHP dependencies
-composer install
+2.  **Start the Frontend Server**
+    * In your **second terminal** (inside the `ui` directory), run:
+        ```bash
+        npm run dev
+        ```
+    * This will start the React application, usually on `http://localhost:5173`.
 
-# Generate a unique application key
-php artisan key:generate
+### ✅ Accessing the Application
 
-# Run database migrations and seed the database with default data
-php artisan migrate:fresh --seed
+Your Accreditation Management System is now live on your local machine!
 
-# Create the symbolic link for file storage
-php artisan storage:link
-2. Set Up the React Frontend
-Now, let's get the user interface running. You will need a second, separate terminal for this part.
+* **Open your browser** and go to: **[http://localhost:5173](http://localhost:5173)**
+* **Login** with the default administrator account:
+    * **Email:** `admin@example.com`
+    * **Password:** `password`
 
-Navigate to the ui Directory
-
-Open a new terminal and navigate into the ui folder:
-
-Bash
-
-cd C:/xampp/htdocs/ams-service/ui
-Install Frontend Dependencies
-
-Run the following command to install all the necessary JavaScript packages:
-
-Bash
-
-npm install
-Running the Application
-To run the application, you need to start both the backend and frontend servers.
-
-Start the Laravel Backend Server
-
-In your first terminal (at the project root), run:
-
-Bash
-
-php artisan serve
-This will start the backend API server, usually at http://localhost:8000.
-
-Start the React Frontend Server
-
-In your second terminal (inside the ui directory), run:
-
-Bash
-
-npm run dev
-This will start the frontend development server, usually at http://localhost:5173.
-
-Accessing the Application
-Your Accreditation Management System is now running!
-
-Open your browser and go to: http://localhost:5173
-
-Login with the default administrator credentials:
-
-Email: admin@example.com
-
-Password: password
-
-You must keep both terminal windows open to continue running the application.
+> **Note:** You must keep both terminal windows open while using the application. Happy coding!
