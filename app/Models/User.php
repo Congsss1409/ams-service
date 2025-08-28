@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +21,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // Add the new fields here to allow them to be updated
         'middle_name',
         'last_name',
         'suffix',
@@ -49,5 +48,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the qualifications for the user.
+     */
+    public function qualifications()
+    {
+        return $this->hasMany(FacultyQualification::class);
     }
 }

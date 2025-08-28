@@ -186,6 +186,8 @@ function Sidebar({ user, onViewChange, currentView }) {
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('DASHBOARD')} style={navLinkStyle('DASHBOARD')}><i className="bi bi-speedometer2 me-3 fs-5"></i> Dashboard</Nav.Link></Nav.Item>
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('PROGRAMS')} style={navLinkStyle('PROGRAMS')}><i className="bi bi-card-list me-3 fs-5"></i> Program Management</Nav.Link></Nav.Item>
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('DOCUMENTS')} style={navLinkStyle('DOCUMENTS')}><i className="bi bi-file-earmark-text me-3 fs-5"></i> Document Repository</Nav.Link></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('FACILITIES')} style={navLinkStyle('FACILITIES')}><i className="bi bi-building me-3 fs-5"></i> Facilities Monitoring</Nav.Link></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('ACTION_PLANS')} style={navLinkStyle('ACTION_PLANS')}><i className="bi bi-clipboard-check me-3 fs-5"></i> Action Plans</Nav.Link></Nav.Item>
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('COMPLIANCE')} style={navLinkStyle('COMPLIANCE')}><i className="bi bi-list-check me-3 fs-5"></i> Compliance Matrix</Nav.Link></Nav.Item>
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('AUDIT_SCHEDULE')} style={navLinkStyle('AUDIT_SCHEDULE')}><i className="bi bi-calendar-check me-3 fs-5"></i> Audit Scheduler</Nav.Link></Nav.Item>
         <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('ACCREDITOR_VISIT')} style={navLinkStyle('ACCREDITOR_VISIT')}><i className="bi bi-person-check me-3 fs-5"></i> Accreditor Visits</Nav.Link></Nav.Item>
@@ -236,7 +238,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange 
   );
 }
 
-// --- All Page Components (Dashboard, Program, Document, etc.) ---
+// --- All Page Components ---
 function DashboardHomepage({ token }) {
     const [analysisData, setAnalysisData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -280,7 +282,7 @@ function DashboardHomepage({ token }) {
     );
 }
 
-function ProgramManagementPage({ token, onManageDocuments }) {
+function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }) {
     const [programs, setPrograms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -331,7 +333,12 @@ function ProgramManagementPage({ token, onManageDocuments }) {
         <div className="d-flex justify-content-between align-items-center mb-4"><h1>Program Management</h1><Button onClick={() => handleShowModal()} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-plus-circle me-2"></i> Add Program</Button></div>
         {isLoading ? <div className="text-center p-5"><Spinner animation="border" /></div> : error ? <Alert variant="danger">{error}</Alert> :
             <Table striped bordered hover responsive><thead><tr><th>ID</th><th>Program Name</th><th>Accreditation Level</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody>{programs.map(p => <tr key={p.id}><td>{p.id}</td><td>{p.name}</td><td>{p.accreditation_level}</td><td>{p.status}</td><td><Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(p)}><i className="bi bi-pencil-square"></i> Edit</Button><Button variant="outline-danger" size="sm" className="me-2" onClick={() => handleDeleteProgram(p.id)}><i className="bi bi-trash"></i> Delete</Button><Button variant="outline-info" size="sm" onClick={() => onManageDocuments(p)}><i className="bi bi-folder"></i> Manage Docs</Button></td></tr>)}</tbody>
+                <tbody>{programs.map(p => <tr key={p.id}><td>{p.id}</td><td>{p.name}</td><td>{p.accreditation_level}</td><td>{p.status}</td><td>
+                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(p)}><i className="bi bi-pencil-square"></i> Edit</Button>
+                    <Button variant="outline-danger" size="sm" className="me-2" onClick={() => handleDeleteProgram(p.id)}><i className="bi bi-trash"></i> Delete</Button>
+                    <Button variant="outline-info" size="sm" className="me-2" onClick={() => onManageDocuments(p)}><i className="bi bi-folder"></i> Docs</Button>
+                    <Button variant="outline-success" size="sm" onClick={() => onManageActionPlans(p)}><i className="bi bi-clipboard-check"></i> Plans</Button>
+                </td></tr>)}</tbody>
             </Table>}
         <Modal show={showModal} onHide={handleCloseModal}><Modal.Header closeButton><Modal.Title>{currentProgram.id ? 'Edit Program' : 'Add New Program'}</Modal.Title></Modal.Header><Modal.Body><Form>
             <Form.Group className="mb-3"><Form.Label>Program Name</Form.Label><Form.Control type="text" defaultValue={currentProgram.name} onChange={(e) => setCurrentProgram({ ...currentProgram, name: e.target.value })} /></Form.Group>
@@ -483,7 +490,7 @@ function ComplianceMatrixPage({ token }) {
     </div>);
 }
 
-function UserManagementPage({ token, currentUser }) {
+function UserManagementPage({ token, currentUser, onManageQualifications }) {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -550,7 +557,11 @@ function UserManagementPage({ token, currentUser }) {
         <div className="d-flex justify-content-between align-items-center mb-4"><h1>User Management</h1><Button onClick={() => handleShowModal()} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-person-plus-fill me-2"></i> Add User</Button></div>
         {isLoading ? <div className="text-center p-5"><Spinner animation="border" /></div> : error ? <Alert variant="danger">{error}</Alert> :
             <Table striped bordered hover responsive><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
-                <tbody>{users.map(user => <tr key={user.id}><td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td><Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(user)}><i className="bi bi-pencil-square"></i> Edit</Button><Button variant="outline-danger" size="sm" onClick={() => handleDeleteUser(user.id)}><i className="bi bi-trash"></i> Delete</Button></td></tr>)}</tbody>
+                <tbody>{users.map(user => <tr key={user.id}><td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>
+                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(user)}><i className="bi bi-pencil-square"></i> Edit</Button>
+                    <Button variant="outline-danger" size="sm" className="me-2" onClick={() => handleDeleteUser(user.id)}><i className="bi bi-trash"></i> Delete</Button>
+                    <Button variant="outline-info" size="sm" onClick={() => onManageQualifications(user)}><i className="bi bi-award"></i> Qualifications</Button>
+                </td></tr>)}</tbody>
             </Table>}
         {currentUserData && <Modal show={showModal} onHide={handleCloseModal}><Modal.Header closeButton><Modal.Title>{currentUserData.id ? 'Edit User' : 'Add New User'}</Modal.Title></Modal.Header><Modal.Body><Form>
             <Form.Group className="mb-3"><Form.Label>Full Name</Form.Label><Form.Control type="text" defaultValue={currentUserData.name} onChange={(e) => setCurrentUserData({ ...currentUserData, name: e.target.value })} required /></Form.Group>
@@ -755,6 +766,309 @@ function AccreditorVisitPage({ token }) {
     </div>);
 }
 
+function FacultyQualificationPage({ user, token, onBack }) {
+    const [qualifications, setQualifications] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [newQual, setNewQual] = useState({ type: 'Degree', name: '', institution: '', year_obtained: new Date().getFullYear() });
+
+    const fetchQualifications = async () => {
+        if (!user) return;
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:8000/api/users/${user.id}/qualifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Failed to fetch qualifications.');
+            setQualifications(await response.json());
+        } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
+    };
+
+    useEffect(() => {
+        fetchQualifications();
+    }, [user, token]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const response = await fetch(`http://localhost:8000/api/users/${user.id}/qualifications`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(newQual)
+            });
+            if (!response.ok) throw new Error('Failed to save qualification.');
+            fetchQualifications();
+            setShowModal(false);
+            setNewQual({ type: 'Degree', name: '', institution: '', year_obtained: new Date().getFullYear() });
+            window.Swal.fire('Success!', 'Qualification added.', 'success');
+        } catch (err) { window.Swal.fire('Error!', err.message, 'error'); } finally { setIsSaving(false); }
+    };
+
+    const handleDelete = (qualId) => {
+        window.Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' })
+            .then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`http://localhost:8000/api/qualifications/${qualId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (!response.ok) throw new Error('Failed to delete qualification.');
+                        fetchQualifications();
+                        window.Swal.fire('Deleted!', 'Qualification has been deleted.', 'success');
+                    } catch (err) { window.Swal.fire('Error!', err.message, 'error'); }
+                }
+            });
+    };
+
+    return (
+        <div>
+            <Button variant="light" onClick={onBack} className="mb-4"><i className="bi bi-arrow-left"></i> Back to Users</Button>
+            <div className="content-card">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Qualifications for {user?.name}</h1>
+                    <Button onClick={() => setShowModal(true)} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-plus-circle me-2"></i> Add Qualification</Button>
+                </div>
+                {isLoading ? <div className="text-center p-5"><Spinner /></div> : (
+                    <Table striped bordered hover responsive>
+                        <thead><tr><th>Type</th><th>Name</th><th>Institution</th><th>Year</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {qualifications.map(q => (
+                                <tr key={q.id}>
+                                    <td><Badge bg={q.type === 'Degree' ? 'primary' : (q.type === 'Certification' ? 'success' : 'info')}>{q.type}</Badge></td>
+                                    <td>{q.name}</td>
+                                    <td>{q.institution}</td>
+                                    <td>{q.year_obtained}</td>
+                                    <td><Button variant="outline-danger" size="sm" onClick={() => handleDelete(q.id)}><i className="bi bi-trash"></i></Button></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                )}
+            </div>
+            <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton><Modal.Title>Add New Qualification</Modal.Title></Modal.Header>
+                <Modal.Body>
+                    <Form.Group className="mb-3"><Form.Label>Type</Form.Label><Form.Select value={newQual.type} onChange={e => setNewQual({...newQual, type: e.target.value})}><option>Degree</option><option>Certification</option><option>Training</option></Form.Select></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Name / Title</Form.Label><Form.Control type="text" value={newQual.name} onChange={e => setNewQual({...newQual, name: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Institution / Issuing Body</Form.Label><Form.Control type="text" value={newQual.institution} onChange={e => setNewQual({...newQual, institution: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Year Obtained</Form.Label><Form.Control type="number" value={newQual.year_obtained} onChange={e => setNewQual({...newQual, year_obtained: e.target.value})} /></Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                    <Button variant="primary" onClick={handleSave} disabled={isSaving} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}>{isSaving ? <Spinner as="span" size="sm" /> : 'Save'}</Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    );
+}
+
+function FacilityManagementPage({ token }) {
+    const [facilities, setFacilities] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [currentFacility, setCurrentFacility] = useState(null);
+
+    const fetchFacilities = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/facilities', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Failed to fetch facilities.');
+            setFacilities(await response.json());
+        } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
+    };
+
+    useEffect(() => { fetchFacilities(); }, [token]);
+
+    const handleShowModal = (facility = null) => {
+        setCurrentFacility(facility || { name: '', location: '', type: 'Classroom', capacity: 0, condition_status: 'Good', notes: '' });
+        setShowModal(true);
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        const url = currentFacility.id ? `http://localhost:8000/api/facilities/${currentFacility.id}` : 'http://localhost:8000/api/facilities';
+        const method = currentFacility.id ? 'PUT' : 'POST';
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(currentFacility)
+            });
+            if (!response.ok) throw new Error('Failed to save facility.');
+            fetchFacilities();
+            setShowModal(false);
+            window.Swal.fire('Success!', 'Facility saved.', 'success');
+        } catch (err) { window.Swal.fire('Error!', err.message, 'error'); } finally { setIsSaving(false); }
+    };
+
+    const handleDelete = (id) => {
+        window.Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!' })
+            .then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch(`http://localhost:8000/api/facilities/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        if (!response.ok) throw new Error('Failed to delete facility.');
+                        fetchFacilities();
+                        window.Swal.fire('Deleted!', 'Facility has been deleted.', 'success');
+                    } catch (err) { window.Swal.fire('Error!', err.message, 'error'); }
+                }
+            });
+    };
+
+    return (
+        <div className="content-card">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Facilities Monitoring</h1>
+                <Button onClick={() => handleShowModal()} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-plus-circle me-2"></i> Add Facility</Button>
+            </div>
+            {isLoading ? <div className="text-center p-5"><Spinner /></div> : (
+                <Table striped bordered hover responsive>
+                    <thead><tr><th>Name</th><th>Location</th><th>Type</th><th>Capacity</th><th>Condition</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        {facilities.map(f => (
+                            <tr key={f.id}>
+                                <td>{f.name}</td>
+                                <td>{f.location}</td>
+                                <td>{f.type}</td>
+                                <td>{f.capacity}</td>
+                                <td><Badge bg={f.condition_status === 'Excellent' ? 'success' : 'warning'}>{f.condition_status}</Badge></td>
+                                <td>
+                                    <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleShowModal(f)}><i className="bi bi-pencil-square"></i></Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(f.id)}><i className="bi bi-trash"></i></Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            )}
+            {currentFacility && <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton><Modal.Title>{currentFacility.id ? 'Edit Facility' : 'Add New Facility'}</Modal.Title></Modal.Header>
+                <Modal.Body>
+                    <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control type="text" value={currentFacility.name} onChange={e => setCurrentFacility({...currentFacility, name: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Location</Form.Label><Form.Control type="text" value={currentFacility.location} onChange={e => setCurrentFacility({...currentFacility, location: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Type</Form.Label><Form.Select value={currentFacility.type} onChange={e => setCurrentFacility({...currentFacility, type: e.target.value})}><option>Classroom</option><option>Laboratory</option><option>Office</option><option>Library</option><option>Other</option></Form.Select></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Capacity</Form.Label><Form.Control type="number" value={currentFacility.capacity} onChange={e => setCurrentFacility({...currentFacility, capacity: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Condition</Form.Label><Form.Select value={currentFacility.condition_status} onChange={e => setCurrentFacility({...currentFacility, condition_status: e.target.value})}><option>Excellent</option><option>Good</option><option>Needs Repair</option></Form.Select></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Notes</Form.Label><Form.Control as="textarea" rows={3} value={currentFacility.notes} onChange={e => setCurrentFacility({...currentFacility, notes: e.target.value})} /></Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                    <Button variant="primary" onClick={handleSave} disabled={isSaving} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}>{isSaving ? <Spinner as="span" size="sm" /> : 'Save'}</Button>
+                </Modal.Footer>
+            </Modal>}
+        </div>
+    );
+}
+
+function ActionPlanPage({ program, token, onBack }) {
+    const [actionPlans, setActionPlans] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [currentPlan, setCurrentPlan] = useState(null);
+
+    const fetchActionPlans = async () => {
+        if (!program) return;
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:8000/api/programs/${program.id}/action-plans`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Failed to fetch action plans.');
+            setActionPlans(await response.json());
+        } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
+    };
+    
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Failed to fetch users.');
+            setUsers(await response.json());
+        } catch (err) { console.error(err.message); }
+    };
+
+    useEffect(() => {
+        fetchActionPlans();
+        fetchUsers();
+    }, [program, token]);
+
+    const handleShowModal = (plan = null) => {
+        setCurrentPlan(plan || { title: '', description: '', status: 'Not Started', due_date: '', assigned_to_user_id: null });
+        setShowModal(true);
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        const url = currentPlan.id ? `http://localhost:8000/api/action-plans/${currentPlan.id}` : `http://localhost:8000/api/programs/${program.id}/action-plans`;
+        const method = currentPlan.id ? 'PUT' : 'POST';
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify(currentPlan)
+            });
+            if (!response.ok) throw new Error('Failed to save action plan.');
+            fetchActionPlans();
+            setShowModal(false);
+            window.Swal.fire('Success!', 'Action plan saved.', 'success');
+        } catch (err) { window.Swal.fire('Error!', err.message, 'error'); } finally { setIsSaving(false); }
+    };
+    
+    const getStatusBadge = (status) => {
+        if (status === 'Completed') return 'success';
+        if (status === 'In Progress') return 'primary';
+        return 'secondary';
+    };
+
+    return (
+        <div>
+            <Button variant="light" onClick={onBack} className="mb-4"><i className="bi bi-arrow-left"></i> Back to Programs</Button>
+            <div className="content-card">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Action Plans for {program?.name}</h1>
+                    <Button onClick={() => handleShowModal()} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}><i className="bi bi-plus-circle me-2"></i> New Action Plan</Button>
+                </div>
+                {isLoading ? <div className="text-center p-5"><Spinner /></div> : (
+                    <Row>
+                        {actionPlans.map(plan => (
+                            <Col md={6} lg={4} key={plan.id} className="mb-4">
+                                <Card>
+                                    <Card.Header>
+                                        <div className="d-flex justify-content-between">
+                                            <span>Due: {plan.due_date || 'N/A'}</span>
+                                            <Badge bg={getStatusBadge(plan.status)}>{plan.status}</Badge>
+                                        </div>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        <Card.Title>{plan.title}</Card.Title>
+                                        <Card.Text>{plan.description}</Card.Text>
+                                        <hr />
+                                        <small className="text-muted">Assigned to: {plan.assigned_user?.name || 'Unassigned'}</small>
+                                    </Card.Body>
+                                    <Card.Footer>
+                                        <Button variant="outline-primary" size="sm" onClick={() => handleShowModal(plan)}>Edit</Button>
+                                    </Card.Footer>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                )}
+            </div>
+            {currentPlan && <Modal show={showModal} onHide={() => setShowModal(false)}>
+                <Modal.Header closeButton><Modal.Title>{currentPlan.id ? 'Edit Action Plan' : 'New Action Plan'}</Modal.Title></Modal.Header>
+                <Modal.Body>
+                    <Form.Group className="mb-3"><Form.Label>Title</Form.Label><Form.Control type="text" value={currentPlan.title} onChange={e => setCurrentPlan({...currentPlan, title: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} value={currentPlan.description} onChange={e => setCurrentPlan({...currentPlan, description: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Status</Form.Label><Form.Select value={currentPlan.status} onChange={e => setCurrentPlan({...currentPlan, status: e.target.value})}><option>Not Started</option><option>In Progress</option><option>Completed</option></Form.Select></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Due Date</Form.Label><Form.Control type="date" value={currentPlan.due_date} onChange={e => setCurrentPlan({...currentPlan, due_date: e.target.value})} /></Form.Group>
+                    <Form.Group className="mb-3"><Form.Label>Assign To</Form.Label><Form.Select value={currentPlan.assigned_to_user_id || ''} onChange={e => setCurrentPlan({...currentPlan, assigned_to_user_id: e.target.value})}><option value="">Unassigned</option>{users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</Form.Select></Form.Group>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                    <Button variant="primary" onClick={handleSave} disabled={isSaving} style={{ backgroundColor: 'var(--primary-purple)', border: 'none' }}>{isSaving ? <Spinner as="span" size="sm" /> : 'Save'}</Button>
+                </Modal.Footer>
+            </Modal>}
+        </div>
+    );
+}
+
 
 // --- Main Dashboard Layout ---
 function DashboardLayout({ onLogout, token }) {
@@ -762,6 +1076,8 @@ function DashboardLayout({ onLogout, token }) {
     const [sidebarVisible, setSidebarVisible] = useState(true);
     const [currentView, setCurrentView] = useState('DASHBOARD');
     const [selectedProgram, setSelectedProgram] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+
     const fetchUser = async () => {
         try {
             const response = await fetch('http://localhost:8000/api/user', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
@@ -771,10 +1087,23 @@ function DashboardLayout({ onLogout, token }) {
         } catch (error) { console.error("Error fetching user:", error); onLogout(); }
     };
     useEffect(() => { fetchUser(); }, [token, onLogout]);
+    
     const handleManageDocuments = (program) => { setSelectedProgram(program); setCurrentView('DOCUMENTS'); };
+    const handleManageActionPlans = (program) => { setSelectedProgram(program); setCurrentView('ACTION_PLANS'); };
     const handleBackToPrograms = () => { setSelectedProgram(null); setCurrentView('PROGRAMS'); };
+    
+    const handleManageQualifications = (userForQual) => {
+        setSelectedUser(userForQual);
+        setCurrentView('QUALIFICATIONS');
+    };
+    
+    const handleBackToUsers = () => {
+        setSelectedUser(null);
+        setCurrentView('USERS');
+    };
+
     const handleViewChange = (view) => {
-        if (view === 'DOCUMENTS' && !selectedProgram) {
+        if ((view === 'DOCUMENTS' || view === 'ACTION_PLANS') && !selectedProgram) {
             window.Swal.fire('Info', 'Please select a program first from the Program Management page.', 'info');
             setCurrentView('PROGRAMS');
             return;
@@ -783,15 +1112,19 @@ function DashboardLayout({ onLogout, token }) {
     };
     const handleUserUpdate = (updatedUser) => setUser(updatedUser);
     const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
+
     const renderContent = () => {
         switch (currentView) {
             case 'DASHBOARD': return <DashboardHomepage token={token} />;
-            case 'PROGRAMS': return <ProgramManagementPage token={token} onManageDocuments={handleManageDocuments} />;
+            case 'PROGRAMS': return <ProgramManagementPage token={token} onManageDocuments={handleManageDocuments} onManageActionPlans={handleManageActionPlans} />;
             case 'DOCUMENTS': return <DocumentManagementPage program={selectedProgram} token={token} onBack={handleBackToPrograms} />;
+            case 'FACILITIES': return <FacilityManagementPage token={token} />;
+            case 'ACTION_PLANS': return <ActionPlanPage program={selectedProgram} token={token} onBack={handleBackToPrograms} />;
             case 'COMPLIANCE': return <ComplianceMatrixPage token={token} />;
             case 'AUDIT_SCHEDULE': return <AuditSchedulePage token={token} />;
             case 'ACCREDITOR_VISIT': return <AccreditorVisitPage token={token} />;
-            case 'USERS': return <UserManagementPage token={token} currentUser={user} />;
+            case 'USERS': return <UserManagementPage token={token} currentUser={user} onManageQualifications={handleManageQualifications} />;
+            case 'QUALIFICATIONS': return <FacultyQualificationPage user={selectedUser} token={token} onBack={handleBackToUsers} />;
             case 'PROFILE': return <ProfilePage user={user} token={token} onUserUpdate={handleUserUpdate} />;
             default: return <DashboardHomepage token={token} />;
         }
