@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\Program;
+use App\Models\ComplianceCriterion; // <-- Import the ComplianceCriterion model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -27,12 +28,13 @@ class DocumentController extends Controller
 
     /**
      * Store a newly created document in storage.
+     * This method has been updated to be more robust.
      */
     public function store(Request $request, Program $program)
     {
         $validator = Validator::make($request->all(), [
             'document' => 'required|file|mimes:pdf,doc,docx,jpg,png,zip|max:20480', // 20MB Max
-            'section' => 'required|string|max:255',
+            'section' => 'required|integer|exists:compliance_criteria,section',
         ]);
 
         if ($validator->fails()) {
@@ -40,19 +42,34 @@ class DocumentController extends Controller
         }
 
         $file = $request->file('document');
-        $originalName = $file->getClientOriginalName();
-        
-        // The fix is here: We now get the filename without its extension.
-        $nameWithoutExtension = pathinfo($originalName, PATHINFO_FILENAME);
 
-        // Specify the 'public' disk for storage.
+        // --- START OF THE FIX ---
+        // Find the specific compliance criterion based on the selected section.
+        // Note: This assumes one required document per section as per the current system design.
+        $criterion = ComplianceCriterion::where('section', $request->section)->first();
+
+        if (!$criterion) {
+            return response()->json(['message' => 'No compliance criterion found for the selected section.'], 422);
+        }
+
+        // Use the official "document_type_needed" as the name, ignoring the user's original filename.
+        // This guarantees the name will always match what the ComplianceController is looking for.
+        $documentName = $criterion->document_type_needed;
+        
         $path = $file->store('documents/' . $program->id, 'public');
 
-        $document = $program->documents()->create([
-            'name' => $nameWithoutExtension, // Use the name without the extension.
-            'path' => $path,
-            'section' => $request->section,
-        ]);
+        // Use updateOrCreate to either create a new document record or update the existing one for that criterion.
+        // This prevents duplicate entries for the same requirement.
+        $document = $program->documents()->updateOrCreate(
+            [
+                'name' => $documentName, // Match based on the official requirement name
+                'section' => $request->section,
+            ],
+            [
+                'path' => $path, // Update the file path
+            ]
+        );
+        // --- END OF THE FIX ---
 
         return response()->json($document, 201);
     }
