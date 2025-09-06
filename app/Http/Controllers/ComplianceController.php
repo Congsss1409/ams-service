@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class ComplianceController extends Controller
 {
+    /**
+     * Get the compliance matrix for a specific program.
+     */
     public function getComplianceMatrix(Program $program)
     {
         try {
@@ -20,9 +23,7 @@ class ComplianceController extends Controller
             }
             
             $matrix = $allCriteria->map(function ($criterion) use ($program) {
-                // This is the new, more reliable logic.
-                // It directly checks the database to see if a document with the
-                // exact required name exists for the current program.
+                // Check if a document with the required name exists for the program
                 $isCompliant = $program->documents()
                                        ->where('name', $criterion->document_type_needed)
                                        ->exists();
@@ -32,7 +33,7 @@ class ComplianceController extends Controller
                     'section' => $criterion->section,
                     'criterion_code' => $criterion->criterion_code,
                     'description' => $criterion->description,
-                    'document_needed' => $criterion->document_type_needed,
+                    'document_needed' => $criterion->document_type_needed, // This is the correct property from the model
                     'status' => $isCompliant ? 'Compliant' : 'Missing',
                     'submitted_document' => $isCompliant ? $criterion->document_type_needed : null,
                 ];
@@ -41,8 +42,8 @@ class ComplianceController extends Controller
             return response()->json($matrix);
 
         } catch (\Exception $e) {
-            Log::error('FATAL ERROR in ComplianceController for Program ID ' . $program->id . ': ' . $e->getMessage() . ' on line ' . $e->getLine() . ' in ' . $e->getFile());
-            return response()->json(['message' => 'A critical error occurred on the server while generating the compliance matrix.'], 500);
+            Log::error('FATAL ERROR in ComplianceController for Program ID ' . $program->id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'A critical error occurred while generating the compliance matrix.'], 500);
         }
     }
 }

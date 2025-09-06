@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Spinner, Alert, Nav, Dropdown, Table, Modal, Card, ListGroup, Badge, ProgressBar } from 'react-bootstrap';
 
 // --- Asset URLs ---
-const logoUrl = '/LOGO (1).png'; 
+const logoUrl = '/LOGO (1).png';
 const backgroundImageUrl = '/bg.jpg';
 const schoolLogoUrl = 'https://i.postimg.cc/sXGYxXTm/image.png'; // Placeholder for the small logo in the top navbar
 
@@ -57,6 +57,13 @@ function StyleLoader() {
         flex-direction: column;
         flex-grow: 1;
         width: calc(100% - var(--sidebar-width));
+      }
+      .notification-item {
+        white-space: normal;
+        max-width: 350px;
+      }
+      .notification-item small {
+        font-size: 0.75rem;
       }
     `;
     document.head.appendChild(globalStyle);
@@ -199,7 +206,7 @@ function Sidebar({ user, onViewChange, currentView }) {
   );
 }
 
-function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange }) {
+function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange, notifications, onMarkAsRead }) {
   const [time, setTime] = useState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
   useEffect(() => { 
     const timer = setInterval(() => setTime(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })), 1000); 
@@ -210,20 +217,40 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange 
     <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Button variant="link" onClick={onToggleSidebar} style={{ background: 'none', border: 'none', fontSize: '1.5rem', marginRight: '1.5rem', color: 'var(--text-secondary)' }}><i className="bi bi-list"></i></Button>
-        <nav aria-label="breadcrumb"><ol className="breadcrumb mb-0"><li className="breadcrumb-item"><a href="#" style={{ textDecoration: 'none', color: 'var(--primary-purple)' }}>AMS Portal</a></li><li className="breadcrumb-item active" aria-current="page">{pageTitle}</li></ol></nav>
+        <nav aria-label="breadcrumb"><ol className="breadcrumb mb-0"><li className="breadcrumb-item"><a href="#" onClick={(e) => { e.preventDefault(); onViewChange('DASHBOARD'); }} style={{ textDecoration: 'none', color: 'var(--primary-purple)' }}>AMS Portal</a></li><li className="breadcrumb-item active" aria-current="page">{pageTitle}</li></ol></nav>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: 'var(--text-secondary)' }}>
         <span>{time}</span>
+        {/* --- NOTIFICATION DROPDOWN --- */}
         <Dropdown>
-            <Dropdown.Toggle as="a" href="#" className="text-secondary" style={{textDecoration: 'none'}}><i className="bi bi-bell-fill fs-5"></i></Dropdown.Toggle>
-            <Dropdown.Menu align="end" className="p-3" style={{width: '300px'}}>
-                <div className="text-center">
+          <Dropdown.Toggle as="a" href="#" className="text-secondary position-relative" style={{textDecoration: 'none'}}>
+            <i className="bi bi-bell-fill fs-5"></i>
+            {notifications.length > 0 && (
+                <Badge pill bg="danger" className="position-absolute top-0 start-100 translate-middle" style={{fontSize: '0.6em'}}>
+                    {notifications.length}
+                </Badge>
+            )}
+          </Dropdown.Toggle>
+          <Dropdown.Menu align="end" className="p-2" style={{width: '380px', maxHeight: '400px', overflowY: 'auto'}}>
+            <Dropdown.Header>Notifications</Dropdown.Header>
+            <Dropdown.Divider />
+            {notifications.length > 0 ? (
+                notifications.map(notification => (
+                    <Dropdown.Item key={notification.id} onClick={() => onMarkAsRead(notification.id)} className="notification-item">
+                        <div className="fw-bold">{notification.message.split("'")[1] || 'New Update'}</div>
+                        <div className="text-muted small">{notification.message.substring(notification.message.indexOf("' was") + 1)}</div>
+                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>{new Date(notification.created_at).toLocaleString()}</div>
+                    </Dropdown.Item>
+                ))
+            ) : (
+                <div className="text-center p-3">
                     <i className="bi bi-bell fs-2 text-muted"></i>
-                    <p className="mt-2">No notifications</p>
-                    <small className="text-muted">When you have notifications, they will appear here.</small>
+                    <p className="mt-2 mb-0">No new notifications</p>
                 </div>
-            </Dropdown.Menu>
+            )}
+          </Dropdown.Menu>
         </Dropdown>
+        {/* --- END NOTIFICATION DROPDOWN --- */}
         <Dropdown>
             <Dropdown.Toggle as="a" href="#" className="text-secondary" style={{textDecoration: 'none'}}><i className="bi bi-person-circle fs-4"></i></Dropdown.Toggle>
             <Dropdown.Menu align="end">
@@ -237,6 +264,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange 
     </header>
   );
 }
+
 
 // --- All Page Components ---
 function DashboardHomepage({ token }) {
@@ -1077,6 +1105,8 @@ function DashboardLayout({ onLogout, token }) {
     const [currentView, setCurrentView] = useState('DASHBOARD');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
+    // --- Notification State ---
+    const [notifications, setNotifications] = useState([]);
 
     const fetchUser = async () => {
         try {
@@ -1086,7 +1116,40 @@ function DashboardLayout({ onLogout, token }) {
             setUser(userData);
         } catch (error) { console.error("Error fetching user:", error); onLogout(); }
     };
-    useEffect(() => { fetchUser(); }, [token, onLogout]);
+    
+    // --- Notification Functions ---
+    const fetchUnreadNotifications = async () => {
+        if (!token) return;
+        try {
+            const response = await fetch('http://localhost:8000/api/notifications/unread', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Failed to fetch notifications');
+            const data = await response.json();
+            setNotifications(data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const handleMarkAsRead = async (id) => {
+        try {
+            await fetch(`http://localhost:8000/api/notifications/${id}/read`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+            });
+            fetchUnreadNotifications(); // Refresh notifications after marking one as read
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+    // --- End Notification Functions ---
+
+
+    useEffect(() => { 
+        fetchUser();
+        fetchUnreadNotifications(); // Fetch on initial load
+        const intervalId = setInterval(fetchUnreadNotifications, 30000); // Poll every 30 seconds
+        return () => clearInterval(intervalId); // Cleanup interval
+    }, [token, onLogout]);
     
     const handleManageDocuments = (program) => { setSelectedProgram(program); setCurrentView('DOCUMENTS'); };
     const handleManageActionPlans = (program) => { setSelectedProgram(program); setCurrentView('ACTION_PLANS'); };
@@ -1133,7 +1196,15 @@ function DashboardLayout({ onLogout, token }) {
         <div className="main-wrapper">
             {sidebarVisible && <Sidebar user={user} onViewChange={handleViewChange} currentView={currentView} />}
             <main className="main-content">
-                <TopNavbar onLogout={onLogout} onToggleSidebar={toggleSidebar} currentView={currentView} user={user} onViewChange={handleViewChange}/>
+                <TopNavbar 
+                    onLogout={onLogout} 
+                    onToggleSidebar={toggleSidebar} 
+                    currentView={currentView} 
+                    user={user} 
+                    onViewChange={handleViewChange}
+                    notifications={notifications}
+                    onMarkAsRead={handleMarkAsRead}
+                />
                 <div className="container-fluid px-0">
                     {renderContent()}
                 </div>

@@ -5,12 +5,13 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Notifications\Notifiable as BaseNotifiable; // Renamed to avoid conflict
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, BaseNotifiable; // Use the renamed trait
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'last_name',
         'suffix',
         'personal_email',
+        'role', // Make sure role is fillable if you set it during creation
     ];
 
     /**
@@ -53,8 +55,24 @@ class User extends Authenticatable
     /**
      * Get the qualifications for the user.
      */
-    public function qualifications()
+    public function qualifications(): HasMany
     {
         return $this->hasMany(FacultyQualification::class);
+    }
+
+    /**
+     * Get the notifications for the user.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+    
+    /**
+     * Get the unread notifications for the user.
+     */
+    public function unreadNotifications()
+    {
+        return $this->notifications()->whereNull('read_at');
     }
 }

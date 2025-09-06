@@ -10,12 +10,26 @@ class Notification extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'user_id',
         'type',
         'message',
         'link',
-        'is_read',
+        'read_at', // Use read_at instead of is_read
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'read_at' => 'datetime',
     ];
 
     /**
