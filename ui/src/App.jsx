@@ -126,7 +126,7 @@ function LoginPage({ onLoginSuccess }) {
     setIsLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -276,7 +276,7 @@ function DashboardHomepage({ token }) {
         const fetchAnalysis = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch('http://localhost:8000/api/gap-analysis/overall-status', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/gap-analysis/overall-status', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                 if (!response.ok) throw new Error('Failed to fetch gap analysis data.');
                 const data = await response.json();
                 setAnalysisData(data);
@@ -320,7 +320,7 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
     const fetchPrograms = async (showLoader = true) => {
         if (showLoader) setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch programs.');
             const data = await response.json();
             setPrograms(data);
@@ -334,7 +334,7 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
     const handleCloseModal = () => setShowModal(false);
     const handleSaveProgram = async () => {
         setIsSaving(true);
-        const url = currentProgram.id ? `http://localhost:8000/api/programs/${currentProgram.id}` : 'http://localhost:8000/api/programs';
+        const url = currentProgram.id ? `https://331225b6a1e3.ngrok-free.app/api/programs/${currentProgram.id}` : 'https://331225b6a1e3.ngrok-free.app/api/programs';
         const method = currentProgram.id ? 'PUT' : 'POST';
         try {
             const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentProgram) });
@@ -349,7 +349,7 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/programs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                         if (!response.ok) throw new Error('Failed to delete program.');
                         fetchPrograms();
                         window.Swal.fire('Deleted!', 'The program has been deleted.', 'success');
@@ -383,12 +383,12 @@ function DocumentManagementPage({ program, token, onBack }) {
     const [error, setError] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedSection, setSelectedSection] = useState('1');
-    const getDocumentUrl = (path) => `http://localhost:8000/storage/${path}`;
+    const getDocumentUrl = (path) => `https://331225b6a1e3.ngrok-free.app/storage/${path}`;
     const fetchDocuments = async () => {
         if (!program) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/programs/${program.id}/documents`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/documents`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch documents.');
             const data = await response.json();
             setDocuments(data);
@@ -403,7 +403,7 @@ function DocumentManagementPage({ program, token, onBack }) {
         formData.append('document', selectedFile);
         formData.append('section', selectedSection);
         try {
-            const response = await fetch(`http://localhost:8000/api/programs/${program.id}/documents`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }, body: formData });
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/documents`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }, body: formData });
             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'Upload failed'); }
             setSelectedFile(null);
             document.querySelector('input[type="file"]').value = '';
@@ -416,7 +416,7 @@ function DocumentManagementPage({ program, token, onBack }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/documents/${docId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/documents/${docId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                         if (!response.ok) throw new Error('Failed to delete document.');
                         fetchDocuments();
                         window.Swal.fire('Deleted!', 'The document has been deleted.', 'success');
@@ -463,7 +463,7 @@ function ProfilePage({ user, token, onUserUpdate }) {
         e.preventDefault();
         setIsSaving(true);
         try {
-            const response = await fetch('http://localhost:8000/api/user', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(formData) });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/user', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(formData) });
             const data = await response.json();
             if (!response.ok) { if (data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); } throw new Error(data.message || 'Failed to update profile.'); }
             window.Swal.fire('Success!', 'Profile updated successfully.', 'success');
@@ -487,7 +487,7 @@ function ComplianceMatrixPage({ token }) {
     useEffect(() => {
         const fetchPrograms = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                 if (!response.ok) throw new Error('Failed to fetch programs.');
                 const data = await response.json();
                 setPrograms(data);
@@ -502,7 +502,7 @@ function ComplianceMatrixPage({ token }) {
             setIsLoading(true);
             setError('');
             try {
-                const response = await fetch(`http://localhost:8000/api/programs/${selectedProgramId}/compliance-matrix`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${selectedProgramId}/compliance-matrix`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
                 if (!response.ok) throw new Error('Failed to fetch compliance data.');
                 const data = await response.json();
                 setMatrixData(data);
@@ -529,7 +529,7 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/users', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/users', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch users.');
             const data = await response.json();
             setUsers(data);
@@ -547,7 +547,7 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
 
     const handleSaveUser = async () => {
         setIsSaving(true);
-        const url = currentUserData.id ? `http://localhost:8000/api/users/${currentUserData.id}` : 'http://localhost:8000/api/users';
+        const url = currentUserData.id ? `https://331225b6a1e3.ngrok-free.app/api/users/${currentUserData.id}` : 'https://331225b6a1e3.ngrok-free.app/api/users';
         const method = currentUserData.id ? 'PUT' : 'POST';
         
         try {
@@ -572,7 +572,7 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                         if (!response.ok) throw new Error('Failed to delete user.');
                         fetchUsers();
                         window.Swal.fire('Deleted!', 'The user has been deleted.', 'success');
@@ -613,7 +613,7 @@ function AuditSchedulePage({ token }) {
     const fetchAudits = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/audit-schedules', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/audit-schedules', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch audits.');
             const data = await response.json();
             setAudits(data);
@@ -622,7 +622,7 @@ function AuditSchedulePage({ token }) {
     
     const fetchPrograms = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch programs.');
             const data = await response.json();
             setPrograms(data);
@@ -643,7 +643,7 @@ function AuditSchedulePage({ token }) {
 
     const handleSaveAudit = async () => {
         setIsSaving(true);
-        const url = currentAudit.id ? `http://localhost:8000/api/audit-schedules/${currentAudit.id}` : 'http://localhost:8000/api/audit-schedules';
+        const url = currentAudit.id ? `https://331225b6a1e3.ngrok-free.app/api/audit-schedules/${currentAudit.id}` : 'https://331225b6a1e3.ngrok-free.app/api/audit-schedules';
         const method = currentAudit.id ? 'PUT' : 'POST';
         
         try {
@@ -664,7 +664,7 @@ function AuditSchedulePage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/audit-schedules/${auditId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/audit-schedules/${auditId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                         if (!response.ok) throw new Error('Failed to delete audit.');
                         fetchAudits();
                         window.Swal.fire('Deleted!', 'The audit schedule has been deleted.', 'success');
@@ -709,7 +709,7 @@ function AccreditorVisitPage({ token }) {
     const fetchVisits = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/visits', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/visits', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch accreditor visits.');
             const data = await response.json();
             setVisits(data);
@@ -718,7 +718,7 @@ function AccreditorVisitPage({ token }) {
 
     const fetchPrograms = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch programs for visits.');
             const data = await response.json();
             setPrograms(data);
@@ -739,7 +739,7 @@ function AccreditorVisitPage({ token }) {
 
     const handleSaveVisit = async () => {
         setIsSaving(true);
-        const url = currentVisit.id ? `http://localhost:8000/api/visits/${currentVisit.id}` : 'http://localhost:8000/api/visits';
+        const url = currentVisit.id ? `https://331225b6a1e3.ngrok-free.app/api/visits/${currentVisit.id}` : 'https://331225b6a1e3.ngrok-free.app/api/visits';
         const method = currentVisit.id ? 'PUT' : 'POST';
 
         try {
@@ -760,7 +760,7 @@ function AccreditorVisitPage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/visits/${visitId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/visits/${visitId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                         if (!response.ok) throw new Error('Failed to delete visit.');
                         fetchVisits();
                         window.Swal.fire('Deleted!', 'The accreditor visit has been deleted.', 'success');
@@ -805,7 +805,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
         if (!user) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/users/${user.id}/qualifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${user.id}/qualifications`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Failed to fetch qualifications.');
             setQualifications(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
@@ -818,7 +818,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/users/${user.id}/qualifications`, {
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${user.id}/qualifications`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(newQual)
@@ -836,7 +836,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/qualifications/${qualId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/qualifications/${qualId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                         if (!response.ok) throw new Error('Failed to delete qualification.');
                         fetchQualifications();
                         window.Swal.fire('Deleted!', 'Qualification has been deleted.', 'success');
@@ -897,7 +897,7 @@ function FacilityManagementPage({ token }) {
     const fetchFacilities = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/facilities', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/facilities', { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Failed to fetch facilities.');
             setFacilities(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
@@ -912,7 +912,7 @@ function FacilityManagementPage({ token }) {
 
     const handleSave = async () => {
         setIsSaving(true);
-        const url = currentFacility.id ? `http://localhost:8000/api/facilities/${currentFacility.id}` : 'http://localhost:8000/api/facilities';
+        const url = currentFacility.id ? `https://331225b6a1e3.ngrok-free.app/api/facilities/${currentFacility.id}` : 'https://331225b6a1e3.ngrok-free.app/api/facilities';
         const method = currentFacility.id ? 'PUT' : 'POST';
         try {
             const response = await fetch(url, {
@@ -932,7 +932,7 @@ function FacilityManagementPage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`http://localhost:8000/api/facilities/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/facilities/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                         if (!response.ok) throw new Error('Failed to delete facility.');
                         fetchFacilities();
                         window.Swal.fire('Deleted!', 'Facility has been deleted.', 'success');
@@ -998,7 +998,7 @@ function ActionPlanPage({ program, token, onBack }) {
         if (!program) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/programs/${program.id}/action-plans`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/action-plans`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Failed to fetch action plans.');
             setActionPlans(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
@@ -1006,7 +1006,7 @@ function ActionPlanPage({ program, token, onBack }) {
     
     const fetchUsers = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!response.ok) throw new Error('Failed to fetch users.');
             setUsers(await response.json());
         } catch (err) { console.error(err.message); }
@@ -1024,7 +1024,7 @@ function ActionPlanPage({ program, token, onBack }) {
 
     const handleSave = async () => {
         setIsSaving(true);
-        const url = currentPlan.id ? `http://localhost:8000/api/action-plans/${currentPlan.id}` : `http://localhost:8000/api/programs/${program.id}/action-plans`;
+        const url = currentPlan.id ? `https://331225b6a1e3.ngrok-free.app/api/action-plans/${currentPlan.id}` : `https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/action-plans`;
         const method = currentPlan.id ? 'PUT' : 'POST';
         try {
             const response = await fetch(url, {
@@ -1110,7 +1110,7 @@ function DashboardLayout({ onLogout, token }) {
 
     const fetchUser = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/user', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/user', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch user data');
             const userData = await response.json();
             setUser(userData);
@@ -1121,7 +1121,7 @@ function DashboardLayout({ onLogout, token }) {
     const fetchUnreadNotifications = async () => {
         if (!token) return;
         try {
-            const response = await fetch('http://localhost:8000/api/notifications/unread', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/notifications/unread', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
             if (!response.ok) throw new Error('Failed to fetch notifications');
             const data = await response.json();
             setNotifications(data);
@@ -1132,7 +1132,7 @@ function DashboardLayout({ onLogout, token }) {
 
     const handleMarkAsRead = async (id) => {
         try {
-            await fetch(`http://localhost:8000/api/notifications/${id}/read`, {
+            await fetch(`https://331225b6a1e3.ngrok-free.app/api/notifications/${id}/read`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
             });
