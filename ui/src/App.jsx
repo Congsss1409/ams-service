@@ -109,7 +109,7 @@ export default function App() {
   return (
     <>
       <StyleLoader />
-      {token ? <DashboardLayout onLogout={handleLogout} token={token} /> : <LoginPage onLoginSuccess={handleLoginSuccess} />}
+      {token ? <DashboardLayout onLogout={handleLogout} /> : <LoginPage onLoginSuccess={handleLoginSuccess} />}
     </>
   );
 }
@@ -400,10 +400,12 @@ function DocumentManagementPage({ program, onBack }) {
         formData.append('document', selectedFile);
         formData.append('section', selectedSection);
         try {
+            // NOTE: When using FormData with apiFetch, we must remove the Content-Type header
+            // so the browser can set it automatically with the correct boundary.
             const response = await apiFetch(`/api/programs/${program.id}/documents`, { 
                 method: 'POST', 
                 body: formData,
-                headers: { 'Content-Type': undefined } // Let browser set Content-Type for FormData
+                headers: { 'Content-Type': undefined } 
             });
             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'Upload failed'); }
             setSelectedFile(null);
@@ -1097,7 +1099,7 @@ function ActionPlanPage({ program, onBack }) {
 
 
 // --- Main Dashboard Layout ---
-function DashboardLayout({ onLogout, token }) {
+function DashboardLayout({ onLogout }) {
     const [user, setUser] = useState(null);
     const [sidebarVisible, setSidebarVisible] = useState(true);
     const [currentView, setCurrentView] = useState('DASHBOARD');
@@ -1115,7 +1117,6 @@ function DashboardLayout({ onLogout, token }) {
     };
     
     const fetchUnreadNotifications = async () => {
-        if (!token) return;
         try {
             const response = await apiFetch('/api/notifications/unread');
             if (!response.ok) throw new Error('Failed to fetch notifications');
@@ -1136,11 +1137,14 @@ function DashboardLayout({ onLogout, token }) {
     };
 
     useEffect(() => { 
-        fetchUser();
-        fetchUnreadNotifications();
-        const intervalId = setInterval(fetchUnreadNotifications, 30000);
-        return () => clearInterval(intervalId);
-    }, [token, onLogout]);
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            fetchUser();
+            fetchUnreadNotifications();
+            const intervalId = setInterval(fetchUnreadNotifications, 30000);
+            return () => clearInterval(intervalId);
+        }
+    }, [onLogout]);
     
     const handleManageDocuments = (program) => { setSelectedProgram(program); setCurrentView('DOCUMENTS'); };
     const handleManageActionPlans = (program) => { setSelectedProgram(program); setCurrentView('ACTION_PLANS'); };
@@ -1203,3 +1207,4 @@ function DashboardLayout({ onLogout, token }) {
         </div>
     );
 }
+
