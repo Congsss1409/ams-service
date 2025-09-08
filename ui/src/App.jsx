@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Spinner, Alert, Nav, Dropdown, Table, Modal, Card, ListGroup, Badge, ProgressBar } from 'react-bootstrap';
+import { apiFetch } from './api'; // Import the new API helper
 
 // --- Asset URLs ---
 const logoUrl = '/LOGO (1).png';
 const backgroundImageUrl = '/bg.jpg';
-const schoolLogoUrl = 'https://i.postimg.cc/sXGYxXTm/image.png'; // Placeholder for the small logo in the top navbar
 
 // --- Helper component to load CSS and apply global styles ---
 function StyleLoader() {
@@ -126,9 +126,8 @@ function LoginPage({ onLoginSuccess }) {
     setIsLoading(true);
     setError('');
     try {
-      const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/login', {
+      const response = await apiFetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
@@ -179,6 +178,7 @@ function Sidebar({ user, onViewChange, currentView }) {
     transition: 'background-color 0.2s, color 0.2s',
     fontWeight: 500,
     backgroundColor: currentView === viewName ? 'var(--primary-purple)' : 'transparent',
+    cursor: 'pointer',
   });
 
   return (
@@ -190,17 +190,17 @@ function Sidebar({ user, onViewChange, currentView }) {
       </div>
       <Nav as="ul" className="flex-column" style={{ listStyle: 'none', paddingLeft: 0, flexGrow: 1 }}>
         <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Main Menu</li>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('DASHBOARD')} style={navLinkStyle('DASHBOARD')}><i className="bi bi-speedometer2 me-3 fs-5"></i> Dashboard</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('PROGRAMS')} style={navLinkStyle('PROGRAMS')}><i className="bi bi-card-list me-3 fs-5"></i> Program Management</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('DOCUMENTS')} style={navLinkStyle('DOCUMENTS')}><i className="bi bi-file-earmark-text me-3 fs-5"></i> Document Repository</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('FACILITIES')} style={navLinkStyle('FACILITIES')}><i className="bi bi-building me-3 fs-5"></i> Facilities Monitoring</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('ACTION_PLANS')} style={navLinkStyle('ACTION_PLANS')}><i className="bi bi-clipboard-check me-3 fs-5"></i> Action Plans</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('COMPLIANCE')} style={navLinkStyle('COMPLIANCE')}><i className="bi bi-list-check me-3 fs-5"></i> Compliance Matrix</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('AUDIT_SCHEDULE')} style={navLinkStyle('AUDIT_SCHEDULE')}><i className="bi bi-calendar-check me-3 fs-5"></i> Audit Scheduler</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('ACCREDITOR_VISIT')} style={navLinkStyle('ACCREDITOR_VISIT')}><i className="bi bi-person-check me-3 fs-5"></i> Accreditor Visits</Nav.Link></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DASHBOARD')} style={navLinkStyle('DASHBOARD')}><i className="bi bi-speedometer2 me-3 fs-5"></i> Dashboard</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROGRAMS')} style={navLinkStyle('PROGRAMS')}><i className="bi bi-card-list me-3 fs-5"></i> Program Management</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DOCUMENTS')} style={navLinkStyle('DOCUMENTS')}><i className="bi bi-file-earmark-text me-3 fs-5"></i> Document Repository</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('FACILITIES')} style={navLinkStyle('FACILITIES')}><i className="bi bi-building me-3 fs-5"></i> Facilities Monitoring</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACTION_PLANS')} style={navLinkStyle('ACTION_PLANS')}><i className="bi bi-clipboard-check me-3 fs-5"></i> Action Plans</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('COMPLIANCE')} style={navLinkStyle('COMPLIANCE')}><i className="bi bi-list-check me-3 fs-5"></i> Compliance Matrix</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('AUDIT_SCHEDULE')} style={navLinkStyle('AUDIT_SCHEDULE')}><i className="bi bi-calendar-check me-3 fs-5"></i> Audit Scheduler</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACCREDITOR_VISIT')} style={navLinkStyle('ACCREDITOR_VISIT')}><i className="bi bi-person-check me-3 fs-5"></i> Accreditor Visits</a></Nav.Item>
         <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Administration</li>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('USERS')} style={navLinkStyle('USERS')}><i className="bi bi-people me-3 fs-5"></i> User Management</Nav.Link></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><Nav.Link onClick={() => onViewChange('PROFILE')} style={navLinkStyle('PROFILE')}><i className="bi bi-person-circle me-3 fs-5"></i> Profile</Nav.Link></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('USERS')} style={navLinkStyle('USERS')}><i className="bi bi-people me-3 fs-5"></i> User Management</a></Nav.Item>
+        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROFILE')} style={navLinkStyle('PROFILE')}><i className="bi bi-person-circle me-3 fs-5"></i> Profile</a></Nav.Item>
       </Nav>
     </aside>
   );
@@ -221,7 +221,6 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: 'var(--text-secondary)' }}>
         <span>{time}</span>
-        {/* --- NOTIFICATION DROPDOWN --- */}
         <Dropdown>
           <Dropdown.Toggle as="a" href="#" className="text-secondary position-relative" style={{textDecoration: 'none'}}>
             <i className="bi bi-bell-fill fs-5"></i>
@@ -250,7 +249,6 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
             )}
           </Dropdown.Menu>
         </Dropdown>
-        {/* --- END NOTIFICATION DROPDOWN --- */}
         <Dropdown>
             <Dropdown.Toggle as="a" href="#" className="text-secondary" style={{textDecoration: 'none'}}><i className="bi bi-person-circle fs-4"></i></Dropdown.Toggle>
             <Dropdown.Menu align="end">
@@ -265,9 +263,8 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
   );
 }
 
-
 // --- All Page Components ---
-function DashboardHomepage({ token }) {
+function DashboardHomepage() {
     const [analysisData, setAnalysisData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -276,14 +273,14 @@ function DashboardHomepage({ token }) {
         const fetchAnalysis = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/gap-analysis/overall-status', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await apiFetch('/api/gap-analysis/overall-status');
                 if (!response.ok) throw new Error('Failed to fetch gap analysis data.');
                 const data = await response.json();
                 setAnalysisData(data);
             } catch (err) { setError(err.message); } finally { setIsLoading(false); }
         };
         fetchAnalysis();
-    }, [token]);
+    }, []);
 
     const getStatusVariant = (status) => ({ 'At Risk': 'danger', 'Needs Attention': 'warning', 'On Track': 'success' }[status] || 'secondary');
 
@@ -310,7 +307,7 @@ function DashboardHomepage({ token }) {
     );
 }
 
-function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }) {
+function ProgramManagementPage({ onManageDocuments, onManageActionPlans }) {
     const [programs, setPrograms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -320,13 +317,13 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
     const fetchPrograms = async (showLoader = true) => {
         if (showLoader) setIsLoading(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/programs');
             if (!response.ok) throw new Error('Failed to fetch programs.');
             const data = await response.json();
             setPrograms(data);
         } catch (err) { setError(err.message); } finally { if (showLoader) setIsLoading(false); }
     };
-    useEffect(() => { fetchPrograms(); }, [token]);
+    useEffect(() => { fetchPrograms(); }, []);
     const handleShowModal = (program = null) => {
         setCurrentProgram(program || { id: null, name: '', accreditation_level: 'Candidate', status: '' });
         setShowModal(true);
@@ -334,10 +331,10 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
     const handleCloseModal = () => setShowModal(false);
     const handleSaveProgram = async () => {
         setIsSaving(true);
-        const url = currentProgram.id ? `https://331225b6a1e3.ngrok-free.app/api/programs/${currentProgram.id}` : 'https://331225b6a1e3.ngrok-free.app/api/programs';
+        const url = currentProgram.id ? `/api/programs/${currentProgram.id}` : '/api/programs';
         const method = currentProgram.id ? 'PUT' : 'POST';
         try {
-            const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentProgram) });
+            const response = await apiFetch(url, { method, body: JSON.stringify(currentProgram) });
             if (!response.ok) throw new Error('Failed to save program.');
             await fetchPrograms(false);
             handleCloseModal();
@@ -349,7 +346,7 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                        const response = await apiFetch(`/api/programs/${id}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete program.');
                         fetchPrograms();
                         window.Swal.fire('Deleted!', 'The program has been deleted.', 'success');
@@ -376,25 +373,25 @@ function ProgramManagementPage({ token, onManageDocuments, onManageActionPlans }
     </div>);
 }
 
-function DocumentManagementPage({ program, token, onBack }) {
+function DocumentManagementPage({ program, onBack }) {
     const [documents, setDocuments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedSection, setSelectedSection] = useState('1');
-    const getDocumentUrl = (path) => `https://331225b6a1e3.ngrok-free.app/storage/${path}`;
+    const getDocumentUrl = (path) => `${import.meta.env.VITE_API_URL || ''}/storage/${path}`;
     const fetchDocuments = async () => {
         if (!program) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/documents`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch(`/api/programs/${program.id}/documents`);
             if (!response.ok) throw new Error('Failed to fetch documents.');
             const data = await response.json();
             setDocuments(data);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     };
-    useEffect(() => { fetchDocuments(); }, [program, token]);
+    useEffect(() => { fetchDocuments(); }, [program]);
     const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
     const handleUpload = async () => {
         if (!selectedFile || !selectedSection) { window.Swal.fire('Oops...', 'Please select a file and a section.', 'warning'); return; }
@@ -403,7 +400,11 @@ function DocumentManagementPage({ program, token, onBack }) {
         formData.append('document', selectedFile);
         formData.append('section', selectedSection);
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/documents`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }, body: formData });
+            const response = await apiFetch(`/api/programs/${program.id}/documents`, { 
+                method: 'POST', 
+                body: formData,
+                headers: { 'Content-Type': undefined } // Let browser set Content-Type for FormData
+            });
             if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.message || 'Upload failed'); }
             setSelectedFile(null);
             document.querySelector('input[type="file"]').value = '';
@@ -416,7 +417,7 @@ function DocumentManagementPage({ program, token, onBack }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/documents/${docId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                        const response = await apiFetch(`/api/documents/${docId}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete document.');
                         fetchDocuments();
                         window.Swal.fire('Deleted!', 'The document has been deleted.', 'success');
@@ -454,7 +455,7 @@ function DocumentManagementPage({ program, token, onBack }) {
     </div>);
 }
 
-function ProfilePage({ user, token, onUserUpdate }) {
+function ProfilePage({ user, onUserUpdate }) {
     const [formData, setFormData] = useState({ name: '', middle_name: '', last_name: '', suffix: '', personal_email: '' });
     const [isSaving, setIsSaving] = useState(false);
     useEffect(() => { if (user) setFormData({ name: user.name || '', middle_name: user.middle_name || '', last_name: user.last_name || '', suffix: user.suffix || '', personal_email: user.personal_email || '' }); }, [user]);
@@ -463,7 +464,7 @@ function ProfilePage({ user, token, onUserUpdate }) {
         e.preventDefault();
         setIsSaving(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/user', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(formData) });
+            const response = await apiFetch('/api/user', { method: 'PUT', body: JSON.stringify(formData) });
             const data = await response.json();
             if (!response.ok) { if (data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); } throw new Error(data.message || 'Failed to update profile.'); }
             window.Swal.fire('Success!', 'Profile updated successfully.', 'success');
@@ -478,7 +479,7 @@ function ProfilePage({ user, token, onUserUpdate }) {
     </Form></Card.Body></Card></div>);
 }
 
-function ComplianceMatrixPage({ token }) {
+function ComplianceMatrixPage() {
     const [programs, setPrograms] = useState([]);
     const [selectedProgramId, setSelectedProgramId] = useState('');
     const [matrixData, setMatrixData] = useState([]);
@@ -487,7 +488,7 @@ function ComplianceMatrixPage({ token }) {
     useEffect(() => {
         const fetchPrograms = async () => {
             try {
-                const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await apiFetch('/api/programs');
                 if (!response.ok) throw new Error('Failed to fetch programs.');
                 const data = await response.json();
                 setPrograms(data);
@@ -495,21 +496,21 @@ function ComplianceMatrixPage({ token }) {
             } catch (err) { setError(err.message); }
         };
         fetchPrograms();
-    }, [token]);
+    }, []);
     useEffect(() => {
         if (!selectedProgramId) return;
         const fetchMatrix = async () => {
             setIsLoading(true);
             setError('');
             try {
-                const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${selectedProgramId}/compliance-matrix`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+                const response = await apiFetch(`/api/programs/${selectedProgramId}/compliance-matrix`);
                 if (!response.ok) throw new Error('Failed to fetch compliance data.');
                 const data = await response.json();
                 setMatrixData(data);
             } catch (err) { setError(err.message); } finally { setIsLoading(false); }
         };
         fetchMatrix();
-    }, [selectedProgramId, token]);
+    }, [selectedProgramId]);
     return (<div className="content-card"><h1>Compliance Matrix</h1><p>Select a program to view its compliance status against accreditation criteria.</p><Form.Group className="mb-4"><Form.Label>Select Program</Form.Label><Form.Select value={selectedProgramId} onChange={e => setSelectedProgramId(e.target.value)}>{programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</Form.Select></Form.Group>
         {isLoading ? <div className="text-center p-5"><Spinner animation="border" /></div> : error ? <Alert variant="danger">{error}</Alert> :
             <Table striped bordered hover responsive><thead><tr><th>Criterion Code</th><th>Description</th><th>Document Needed</th><th>Status</th></tr></thead>
@@ -518,7 +519,7 @@ function ComplianceMatrixPage({ token }) {
     </div>);
 }
 
-function UserManagementPage({ token, currentUser, onManageQualifications }) {
+function UserManagementPage({ currentUser, onManageQualifications }) {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -529,14 +530,14 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
     const fetchUsers = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/users', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/users');
             if (!response.ok) throw new Error('Failed to fetch users.');
             const data = await response.json();
             setUsers(data);
         } catch (err) { setError(err.message); } finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchUsers(); }, [token]);
+    useEffect(() => { fetchUsers(); }, []);
 
     const handleShowModal = (user = null) => {
         setCurrentUserData(user || { name: '', email: '', password: '', password_confirmation: '' });
@@ -547,11 +548,11 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
 
     const handleSaveUser = async () => {
         setIsSaving(true);
-        const url = currentUserData.id ? `https://331225b6a1e3.ngrok-free.app/api/users/${currentUserData.id}` : 'https://331225b6a1e3.ngrok-free.app/api/users';
+        const url = currentUserData.id ? `/api/users/${currentUserData.id}` : '/api/users';
         const method = currentUserData.id ? 'PUT' : 'POST';
         
         try {
-            const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentUserData) });
+            const response = await apiFetch(url, { method, body: JSON.stringify(currentUserData) });
             const data = await response.json();
             if (!response.ok) {
                 if(data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); }
@@ -572,7 +573,7 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await apiFetch(`/api/users/${userId}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete user.');
                         fetchUsers();
                         window.Swal.fire('Deleted!', 'The user has been deleted.', 'success');
@@ -601,7 +602,7 @@ function UserManagementPage({ token, currentUser, onManageQualifications }) {
     </div>);
 }
 
-function AuditSchedulePage({ token }) {
+function AuditSchedulePage() {
     const [audits, setAudits] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -613,7 +614,7 @@ function AuditSchedulePage({ token }) {
     const fetchAudits = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/audit-schedules', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/audit-schedules');
             if (!response.ok) throw new Error('Failed to fetch audits.');
             const data = await response.json();
             setAudits(data);
@@ -622,7 +623,7 @@ function AuditSchedulePage({ token }) {
     
     const fetchPrograms = async () => {
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/programs');
             if (!response.ok) throw new Error('Failed to fetch programs.');
             const data = await response.json();
             setPrograms(data);
@@ -632,7 +633,7 @@ function AuditSchedulePage({ token }) {
     useEffect(() => {
         fetchAudits();
         fetchPrograms();
-    }, [token]);
+    }, []);
 
     const handleShowModal = (audit = null) => {
         setCurrentAudit(audit || { program_id: programs[0]?.id || '', audit_date: '', status: 'Scheduled', notes: '' });
@@ -643,11 +644,11 @@ function AuditSchedulePage({ token }) {
 
     const handleSaveAudit = async () => {
         setIsSaving(true);
-        const url = currentAudit.id ? `https://331225b6a1e3.ngrok-free.app/api/audit-schedules/${currentAudit.id}` : 'https://331225b6a1e3.ngrok-free.app/api/audit-schedules';
+        const url = currentAudit.id ? `/api/audit-schedules/${currentAudit.id}` : '/api/audit-schedules';
         const method = currentAudit.id ? 'PUT' : 'POST';
         
         try {
-            const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentAudit) });
+            const response = await apiFetch(url, { method, body: JSON.stringify(currentAudit) });
             const data = await response.json();
             if (!response.ok) {
                 if(data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); }
@@ -664,7 +665,7 @@ function AuditSchedulePage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/audit-schedules/${auditId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await apiFetch(`/api/audit-schedules/${auditId}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete audit.');
                         fetchAudits();
                         window.Swal.fire('Deleted!', 'The audit schedule has been deleted.', 'success');
@@ -697,7 +698,7 @@ function AuditSchedulePage({ token }) {
     </div>);
 }
 
-function AccreditorVisitPage({ token }) {
+function AccreditorVisitPage() {
     const [visits, setVisits] = useState([]);
     const [programs, setPrograms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -709,7 +710,7 @@ function AccreditorVisitPage({ token }) {
     const fetchVisits = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/visits', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/visits');
             if (!response.ok) throw new Error('Failed to fetch accreditor visits.');
             const data = await response.json();
             setVisits(data);
@@ -718,7 +719,7 @@ function AccreditorVisitPage({ token }) {
 
     const fetchPrograms = async () => {
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/programs', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/programs');
             if (!response.ok) throw new Error('Failed to fetch programs for visits.');
             const data = await response.json();
             setPrograms(data);
@@ -728,7 +729,7 @@ function AccreditorVisitPage({ token }) {
     useEffect(() => {
         fetchVisits();
         fetchPrograms();
-    }, [token]);
+    }, []);
 
     const handleShowModal = (visit = null) => {
         setCurrentVisit(visit || { program_id: programs[0]?.id || '', accreditor_name: '', visit_date: '', status: 'Planned', notes: '' });
@@ -739,11 +740,11 @@ function AccreditorVisitPage({ token }) {
 
     const handleSaveVisit = async () => {
         setIsSaving(true);
-        const url = currentVisit.id ? `https://331225b6a1e3.ngrok-free.app/api/visits/${currentVisit.id}` : 'https://331225b6a1e3.ngrok-free.app/api/visits';
+        const url = currentVisit.id ? `/api/visits/${currentVisit.id}` : '/api/visits';
         const method = currentVisit.id ? 'PUT' : 'POST';
 
         try {
-            const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(currentVisit) });
+            const response = await apiFetch(url, { method, body: JSON.stringify(currentVisit) });
             const data = await response.json();
             if (!response.ok) {
                 if(data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); }
@@ -760,7 +761,7 @@ function AccreditorVisitPage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/visits/${visitId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await apiFetch(`/api/visits/${visitId}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete visit.');
                         fetchVisits();
                         window.Swal.fire('Deleted!', 'The accreditor visit has been deleted.', 'success');
@@ -794,7 +795,7 @@ function AccreditorVisitPage({ token }) {
     </div>);
 }
 
-function FacultyQualificationPage({ user, token, onBack }) {
+function FacultyQualificationPage({ user, onBack }) {
     const [qualifications, setQualifications] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -805,7 +806,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
         if (!user) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${user.id}/qualifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await apiFetch(`/api/users/${user.id}/qualifications`);
             if (!response.ok) throw new Error('Failed to fetch qualifications.');
             setQualifications(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
@@ -813,14 +814,13 @@ function FacultyQualificationPage({ user, token, onBack }) {
 
     useEffect(() => {
         fetchQualifications();
-    }, [user, token]);
+    }, [user]);
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users/${user.id}/qualifications`, {
+            const response = await apiFetch(`/api/users/${user.id}/qualifications`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(newQual)
             });
             if (!response.ok) throw new Error('Failed to save qualification.');
@@ -836,7 +836,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/qualifications/${qualId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await apiFetch(`/api/qualifications/${qualId}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete qualification.');
                         fetchQualifications();
                         window.Swal.fire('Deleted!', 'Qualification has been deleted.', 'success');
@@ -887,7 +887,7 @@ function FacultyQualificationPage({ user, token, onBack }) {
     );
 }
 
-function FacilityManagementPage({ token }) {
+function FacilityManagementPage() {
     const [facilities, setFacilities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -897,13 +897,13 @@ function FacilityManagementPage({ token }) {
     const fetchFacilities = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/facilities', { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await apiFetch('/api/facilities');
             if (!response.ok) throw new Error('Failed to fetch facilities.');
             setFacilities(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchFacilities(); }, [token]);
+    useEffect(() => { fetchFacilities(); }, []);
 
     const handleShowModal = (facility = null) => {
         setCurrentFacility(facility || { name: '', location: '', type: 'Classroom', capacity: 0, condition_status: 'Good', notes: '' });
@@ -912,12 +912,11 @@ function FacilityManagementPage({ token }) {
 
     const handleSave = async () => {
         setIsSaving(true);
-        const url = currentFacility.id ? `https://331225b6a1e3.ngrok-free.app/api/facilities/${currentFacility.id}` : 'https://331225b6a1e3.ngrok-free.app/api/facilities';
+        const url = currentFacility.id ? `/api/facilities/${currentFacility.id}` : '/api/facilities';
         const method = currentFacility.id ? 'PUT' : 'POST';
         try {
-            const response = await fetch(url, {
+            const response = await apiFetch(url, {
                 method,
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(currentFacility)
             });
             if (!response.ok) throw new Error('Failed to save facility.');
@@ -932,7 +931,7 @@ function FacilityManagementPage({ token }) {
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/facilities/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                        const response = await apiFetch(`/api/facilities/${id}`, { method: 'DELETE' });
                         if (!response.ok) throw new Error('Failed to delete facility.');
                         fetchFacilities();
                         window.Swal.fire('Deleted!', 'Facility has been deleted.', 'success');
@@ -986,7 +985,7 @@ function FacilityManagementPage({ token }) {
     );
 }
 
-function ActionPlanPage({ program, token, onBack }) {
+function ActionPlanPage({ program, onBack }) {
     const [actionPlans, setActionPlans] = useState([]);
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -998,7 +997,7 @@ function ActionPlanPage({ program, token, onBack }) {
         if (!program) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/action-plans`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await apiFetch(`/api/programs/${program.id}/action-plans`);
             if (!response.ok) throw new Error('Failed to fetch action plans.');
             setActionPlans(await response.json());
         } catch (err) { console.error(err.message); } finally { setIsLoading(false); }
@@ -1006,7 +1005,7 @@ function ActionPlanPage({ program, token, onBack }) {
     
     const fetchUsers = async () => {
         try {
-            const response = await fetch(`https://331225b6a1e3.ngrok-free.app/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const response = await apiFetch(`/api/users`);
             if (!response.ok) throw new Error('Failed to fetch users.');
             setUsers(await response.json());
         } catch (err) { console.error(err.message); }
@@ -1015,7 +1014,7 @@ function ActionPlanPage({ program, token, onBack }) {
     useEffect(() => {
         fetchActionPlans();
         fetchUsers();
-    }, [program, token]);
+    }, [program]);
 
     const handleShowModal = (plan = null) => {
         setCurrentPlan(plan || { title: '', description: '', status: 'Not Started', due_date: '', assigned_to_user_id: null });
@@ -1024,12 +1023,11 @@ function ActionPlanPage({ program, token, onBack }) {
 
     const handleSave = async () => {
         setIsSaving(true);
-        const url = currentPlan.id ? `https://331225b6a1e3.ngrok-free.app/api/action-plans/${currentPlan.id}` : `https://331225b6a1e3.ngrok-free.app/api/programs/${program.id}/action-plans`;
+        const url = currentPlan.id ? `/api/action-plans/${currentPlan.id}` : `/api/programs/${program.id}/action-plans`;
         const method = currentPlan.id ? 'PUT' : 'POST';
         try {
-            const response = await fetch(url, {
+            const response = await apiFetch(url, {
                 method,
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(currentPlan)
             });
             if (!response.ok) throw new Error('Failed to save action plan.');
@@ -1105,23 +1103,21 @@ function DashboardLayout({ onLogout, token }) {
     const [currentView, setCurrentView] = useState('DASHBOARD');
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
-    // --- Notification State ---
     const [notifications, setNotifications] = useState([]);
 
     const fetchUser = async () => {
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/user', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/user');
             if (!response.ok) throw new Error('Failed to fetch user data');
             const userData = await response.json();
             setUser(userData);
         } catch (error) { console.error("Error fetching user:", error); onLogout(); }
     };
     
-    // --- Notification Functions ---
     const fetchUnreadNotifications = async () => {
         if (!token) return;
         try {
-            const response = await fetch('https://331225b6a1e3.ngrok-free.app/api/notifications/unread', { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
+            const response = await apiFetch('/api/notifications/unread');
             if (!response.ok) throw new Error('Failed to fetch notifications');
             const data = await response.json();
             setNotifications(data);
@@ -1132,23 +1128,18 @@ function DashboardLayout({ onLogout, token }) {
 
     const handleMarkAsRead = async (id) => {
         try {
-            await fetch(`https://331225b6a1e3.ngrok-free.app/api/notifications/${id}/read`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-            });
-            fetchUnreadNotifications(); // Refresh notifications after marking one as read
+            await apiFetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+            fetchUnreadNotifications();
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
     };
-    // --- End Notification Functions ---
-
 
     useEffect(() => { 
         fetchUser();
-        fetchUnreadNotifications(); // Fetch on initial load
-        const intervalId = setInterval(fetchUnreadNotifications, 30000); // Poll every 30 seconds
-        return () => clearInterval(intervalId); // Cleanup interval
+        fetchUnreadNotifications();
+        const intervalId = setInterval(fetchUnreadNotifications, 30000);
+        return () => clearInterval(intervalId);
     }, [token, onLogout]);
     
     const handleManageDocuments = (program) => { setSelectedProgram(program); setCurrentView('DOCUMENTS'); };
@@ -1178,18 +1169,18 @@ function DashboardLayout({ onLogout, token }) {
 
     const renderContent = () => {
         switch (currentView) {
-            case 'DASHBOARD': return <DashboardHomepage token={token} />;
-            case 'PROGRAMS': return <ProgramManagementPage token={token} onManageDocuments={handleManageDocuments} onManageActionPlans={handleManageActionPlans} />;
-            case 'DOCUMENTS': return <DocumentManagementPage program={selectedProgram} token={token} onBack={handleBackToPrograms} />;
-            case 'FACILITIES': return <FacilityManagementPage token={token} />;
-            case 'ACTION_PLANS': return <ActionPlanPage program={selectedProgram} token={token} onBack={handleBackToPrograms} />;
-            case 'COMPLIANCE': return <ComplianceMatrixPage token={token} />;
-            case 'AUDIT_SCHEDULE': return <AuditSchedulePage token={token} />;
-            case 'ACCREDITOR_VISIT': return <AccreditorVisitPage token={token} />;
-            case 'USERS': return <UserManagementPage token={token} currentUser={user} onManageQualifications={handleManageQualifications} />;
-            case 'QUALIFICATIONS': return <FacultyQualificationPage user={selectedUser} token={token} onBack={handleBackToUsers} />;
-            case 'PROFILE': return <ProfilePage user={user} token={token} onUserUpdate={handleUserUpdate} />;
-            default: return <DashboardHomepage token={token} />;
+            case 'DASHBOARD': return <DashboardHomepage />;
+            case 'PROGRAMS': return <ProgramManagementPage onManageDocuments={handleManageDocuments} onManageActionPlans={handleManageActionPlans} />;
+            case 'DOCUMENTS': return <DocumentManagementPage program={selectedProgram} onBack={handleBackToPrograms} />;
+            case 'FACILITIES': return <FacilityManagementPage />;
+            case 'ACTION_PLANS': return <ActionPlanPage program={selectedProgram} onBack={handleBackToPrograms} />;
+            case 'COMPLIANCE': return <ComplianceMatrixPage />;
+            case 'AUDIT_SCHEDULE': return <AuditSchedulePage />;
+            case 'ACCREDITOR_VISIT': return <AccreditorVisitPage />;
+            case 'USERS': return <UserManagementPage currentUser={user} onManageQualifications={handleManageQualifications} />;
+            case 'QUALIFICATIONS': return <FacultyQualificationPage user={selectedUser} onBack={handleBackToUsers} />;
+            case 'PROFILE': return <ProfilePage user={user} onUserUpdate={handleUserUpdate} />;
+            default: return <DashboardHomepage />;
         }
     };
     return (

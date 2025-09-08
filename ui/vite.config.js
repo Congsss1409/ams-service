@@ -5,11 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // This is the proxy configuration
+    // This proxy is ONLY for local development to avoid CORS issues.
+    // It tells `npm run dev` to forward any request starting with /api 
+    // to your local Laravel server.
     proxy: {
-      // Any request starting with /api will be forwarded to the Laravel backend
       '/api': {
-        target: 'https://331225b6a1e3.ngrok-free.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
