@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Visit;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class VisitController extends Controller
@@ -34,15 +36,12 @@ class VisitController extends Controller
         }
 
         $visit = Visit::create($validator->validated());
-        return response()->json($visit->load('program'), 201);
-    }
+        $visit->load('program');
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Visit $visit)
-    {
-        return $visit->load('program');
+        // --- REAL-TIME NOTIFICATION LOGIC ---
+        $this->notifyAdmins("A new visit by {$visit->accreditor_name} for '{$visit->program->name}' is scheduled for {$visit->visit_date}.");
+
+        return response()->json($visit, 201);
     }
 
     /**
@@ -63,7 +62,12 @@ class VisitController extends Controller
         }
 
         $visit->update($validator->validated());
-        return response()->json($visit->load('program'));
+        $visit->load('program');
+
+        // --- REAL-TIME NOTIFICATION LOGIC ---
+        $this->notifyAdmins("The visit for '{$visit->program->name}' has been updated. New date: {$visit->visit_date}.");
+        
+        return response()->json($visit);
     }
 
     /**
@@ -73,5 +77,24 @@ class VisitController extends Controller
     {
         $visit->delete();
         return response()->json(null, 204);
+    }
+
+    /**
+     * Helper function to notify all admins except the current one.
+     */
+    private function notifyAdmins(string $message)
+    {
+        $currentUser = Auth::user();
+        $adminsToNotify = User::whereHas('role', fn($query) => $query->where('name', 'admin'))
+                               ->where('id', '!=', $currentUser->id)
+                               ->get();
+
+        foreach ($adminsToNotify as $admin) {
+            $admin->notifications()->create([
+                'type' => 'visit_update',
+                'message' => $message,
+                'link' => '/accreditor-visit'
+            ]);
+        }
     }
 }

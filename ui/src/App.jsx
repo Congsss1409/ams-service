@@ -558,6 +558,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
   
   function UserManagementPage({ currentUser, onManageQualifications }) {
       const [users, setUsers] = useState([]);
+      const [roles, setRoles] = useState([]); // State for roles
       const [isLoading, setIsLoading] = useState(true);
       const [isSaving, setIsSaving] = useState(false);
       const [error, setError] = useState('');
@@ -566,20 +567,30 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
       const [broadcastMessage, setBroadcastMessage] = useState('');
       const [isBroadcasting, setIsBroadcasting] = useState(false);
 
-      const fetchUsers = async () => {
+      const fetchUsersAndRoles = async () => {
           setIsLoading(true);
           try {
-              const response = await apiFetch('/api/users');
-              if (!response.ok) throw new Error('Failed to fetch users.');
-              const data = await response.json();
-              setUsers(data);
+              const [usersRes, rolesRes] = await Promise.all([
+                  apiFetch('/api/users'),
+                  apiFetch('/api/roles') // Fetch roles
+              ]);
+              if (!usersRes.ok) throw new Error('Failed to fetch users.');
+              if (!rolesRes.ok) throw new Error('Failed to fetch roles.');
+              
+              setUsers(await usersRes.json());
+              setRoles(await rolesRes.json());
           } catch (err) { setError(err.message); } finally { setIsLoading(false); }
       };
   
-      useEffect(() => { fetchUsers(); }, []);
+      useEffect(() => { fetchUsersAndRoles(); }, []);
   
       const handleShowModal = (user = null) => {
-          setCurrentUserData(user || { name: '', email: '', password: '', password_confirmation: '' });
+          if (user) {
+              setCurrentUserData(user);
+          } else {
+              const defaultUserRole = roles.find(r => r.name.toLowerCase() === 'user');
+              setCurrentUserData({ name: '', email: '', password: '', password_confirmation: '', role_id: defaultUserRole?.id || '' });
+          }
           setShowModal(true);
       };
   
@@ -597,7 +608,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
                   if(data.errors) { const errorMessages = Object.values(data.errors).flat().join(' '); throw new Error(errorMessages); }
                   throw new Error(data.message || 'Failed to save user.');
               }
-              fetchUsers();
+              fetchUsersAndRoles();
               handleCloseModal();
               window.Swal.fire('Success!', 'User saved successfully.', 'success');
           } catch (err) { window.Swal.fire('Error!', err.message, 'error'); } finally { setIsSaving(false); }
@@ -614,7 +625,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
                       try {
                           const response = await apiFetch(`/api/users/${userId}`, { method: 'DELETE' });
                           if (!response.ok) throw new Error('Failed to delete user.');
-                          fetchUsers();
+                          fetchUsersAndRoles();
                           window.Swal.fire('Deleted!', 'The user has been deleted.', 'success');
                       } catch (err) { window.Swal.fire('Error!', err.message, 'error'); }
                   }
@@ -680,6 +691,16 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
               {currentUserData && <Modal show={showModal} onHide={handleCloseModal}><Modal.Header closeButton><Modal.Title>{currentUserData.id ? 'Edit User' : 'Add New User'}</Modal.Title></Modal.Header><Modal.Body><Form>
                   <Form.Group className="mb-3"><Form.Label>Full Name</Form.Label><Form.Control type="text" defaultValue={currentUserData.name} onChange={(e) => setCurrentUserData({ ...currentUserData, name: e.target.value })} required /></Form.Group>
                   <Form.Group className="mb-3"><Form.Label>Email Address</Form.Label><Form.Control type="email" defaultValue={currentUserData.email} onChange={(e) => setCurrentUserData({ ...currentUserData, email: e.target.value })} required /></Form.Group>
+                  
+                  <Form.Group className="mb-3"><Form.Label>Role</Form.Label>
+                      <Form.Select value={currentUserData.role_id || ''} onChange={(e) => setCurrentUserData({ ...currentUserData, role_id: e.target.value })} required>
+                          <option value="" disabled>Select a role</option>
+                          {roles.map(role => (
+                              <option key={role.id} value={role.id}>{role.name}</option>
+                          ))}
+                      </Form.Select>
+                  </Form.Group>
+                  
                   <hr /><p className="text-muted">{currentUserData.id ? 'Leave password fields blank to keep current password.' : ''}</p>
                   <Form.Group className="mb-3"><Form.Label>Password</Form.Label><Form.Control type="password" placeholder={currentUserData.id ? 'New Password' : ''} onChange={(e) => setCurrentUserData({ ...currentUserData, password: e.target.value })} required={!currentUserData.id} /></Form.Group>
                   <Form.Group className="mb-3"><Form.Label>Confirm Password</Form.Label><Form.Control type="password" placeholder={currentUserData.id ? 'Confirm New Password' : ''} onChange={(e) => setCurrentUserData({ ...currentUserData, password_confirmation: e.target.value })} required={!currentUserData.id} /></Form.Group>
@@ -1309,3 +1330,4 @@ function DashboardLayout({ user, onLogout, setUser }) {
         </div>
     );
 }
+

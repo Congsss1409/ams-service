@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Role; // Import the Role model
+use App\Models\Role; // Make sure Role is imported
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -13,10 +13,10 @@ class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * We'll eager-load the role relationship to avoid extra database queries.
      */
     public function index()
     {
+        // Eager load the role relationship to improve performance
         return User::with('role')->get();
     }
 
@@ -29,29 +29,19 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'sometimes|exists:roles,id' // Allow assigning a role, but it's not required
+            'role_id' => 'required|exists:roles,id', // Validates that a valid role is assigned
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Find the default "user" role.
-        $userRole = Role::where('name', 'user')->first();
+        $validatedData = $validator->validated();
+        $validatedData['password'] = Hash::make($request->password);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            // Assign the user role by default if no role_id is provided.
-            'role_id' => $request->role_id ?: $userRole->id,
-            'middle_name' => $request->middle_name,
-            'last_name' => $request->last_name,
-            'suffix' => $request->suffix,
-            'personal_email' => $request->personal_email,
-        ]);
-        
-        // Return the new user with their role loaded.
+        $user = User::create($validatedData);
+
+        // Return the new user with their role data loaded
         return response()->json($user->load('role'), 201);
     }
 
@@ -60,7 +50,6 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        // Load the role relationship when showing a single user.
         return $user->load('role');
     }
 
@@ -70,10 +59,10 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'name' => 'sometimes|required|string|max:255',
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
-            'role_id' => 'sometimes|exists:roles,id',
+            'role_id' => 'sometimes|required|exists:roles,id', // Validates role updates
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'suffix' => 'nullable|string|max:255',
@@ -83,14 +72,14 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
-        $user->fill($request->except('password'));
+        
+        $validatedData = $validator->validated();
 
         if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
+            $validatedData['password'] = Hash::make($request->password);
         }
 
-        $user->save();
+        $user->update($validatedData);
 
         return response()->json($user->load('role'));
     }

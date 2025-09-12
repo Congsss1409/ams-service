@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\Program;
-use App\Models\ComplianceCriterion; // <-- Import the ComplianceCriterion model
+use App\Models\ComplianceCriterion;
+use App\Models\User; // Import the User model
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // Import the Auth facade
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -18,7 +20,6 @@ class DocumentController extends Controller
     public function index(Program $program)
     {
         try {
-            // Eager load the documents to prevent issues
             return response()->json($program->load('documents')->documents);
         } catch (\Exception $e) {
             Log::error('Failed to fetch documents for program ' . $program->id . ': ' . $e->getMessage());
@@ -28,7 +29,6 @@ class DocumentController extends Controller
 
     /**
      * Store a newly created document in storage.
-     * This method has been updated to be more robust.
      */
     public function store(Request $request, Program $program)
     {
@@ -42,34 +42,39 @@ class DocumentController extends Controller
         }
 
         $file = $request->file('document');
+        $originalFileName = $file->getClientOriginalName(); // Get the original file name
 
-        // --- START OF THE FIX ---
-        // Find the specific compliance criterion based on the selected section.
-        // Note: This assumes one required document per section as per the current system design.
         $criterion = ComplianceCriterion::where('section', $request->section)->first();
-
         if (!$criterion) {
             return response()->json(['message' => 'No compliance criterion found for the selected section.'], 422);
         }
 
-        // Use the official "document_type_needed" as the name, ignoring the user's original filename.
-        // This guarantees the name will always match what the ComplianceController is looking for.
         $documentName = $criterion->document_type_needed;
-        
         $path = $file->store('documents/' . $program->id, 'public');
 
-        // Use updateOrCreate to either create a new document record or update the existing one for that criterion.
-        // This prevents duplicate entries for the same requirement.
         $document = $program->documents()->updateOrCreate(
             [
-                'name' => $documentName, // Match based on the official requirement name
+                'name' => $documentName,
                 'section' => $request->section,
             ],
             [
-                'path' => $path, // Update the file path
+                'path' => $path,
             ]
         );
-        // --- END OF THE FIX ---
+
+        // --- REAL-TIME NOTIFICATION LOGIC ---
+        $uploader = Auth::user();
+        $adminsToNotify = User::whereHas('role', fn($query) => $query->where('name', 'admin'))
+                               ->where('id', '!=', $uploader->id) // Don't notify the person who uploaded
+                               ->get();
+
+        foreach ($adminsToNotify as $admin) {
+            $admin->notifications()->create([
+                'type' => 'document_upload',
+                'message' => "{$uploader->name} uploaded '{$originalFileName}' for the program '{$program->name}'.",
+                'link' => '/documents' // A generic link to the documents area
+            ]);
+        }
 
         return response()->json($document, 201);
     }
@@ -80,7 +85,6 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         try {
-            // Specify the 'public' disk when deleting the file.
             Storage::disk('public')->delete($document->path);
             $document->delete();
             return response()->json(null, 204);

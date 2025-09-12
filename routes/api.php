@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Http\Request;
@@ -15,6 +14,18 @@ use App\Http\Controllers\FacultyQualificationController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ActionPlanController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RoleController; // Import the new RoleController
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
 
 // --- Public Routes ---
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('programs/{program}/compliance-matrix', [ComplianceController::class, 'getComplianceMatrix']);
     Route::get('gap-analysis/overall-status', [GapAnalysisController::class, 'getOverallStatus']);
     
-    // --- Notification Routes (for all authenticated users) ---
+    // Notification Routes (for all authenticated users)
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread', [NotificationController::class, 'unread']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
@@ -54,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Full User Management
         Route::apiResource('users', UserController::class);
         
+        // Add the new route to get all roles
+        Route::get('/roles', [RoleController::class, 'index']);
+
         // Faculty Qualifications Management
         Route::get('users/{user}/qualifications', [FacultyQualificationController::class, 'index']);
         Route::post('users/{user}/qualifications', [FacultyQualificationController::class, 'store']);
@@ -75,3 +89,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/notifications/broadcast', [NotificationController::class, 'sendBroadcast']);
     });
 });
+

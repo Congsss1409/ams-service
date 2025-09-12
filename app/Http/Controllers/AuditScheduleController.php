@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditSchedule;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class AuditScheduleController extends Controller
@@ -13,7 +15,6 @@ class AuditScheduleController extends Controller
      */
     public function index()
     {
-        // Eager load the program relationship to avoid extra queries and order by the newest
         return AuditSchedule::with('program')->orderBy('audit_date', 'desc')->get();
     }
 
@@ -34,18 +35,12 @@ class AuditScheduleController extends Controller
         }
 
         $audit = AuditSchedule::create($validator->validated());
+        $audit->load('program'); // Load program relationship for the message
 
-        // Return the new audit with the program data loaded
-        return response()->json($audit->load('program'), 201);
-    }
+        // --- REAL-TIME NOTIFICATION LOGIC ---
+        $this->notifyAdmins("A new audit for '{$audit->program->name}' has been scheduled for {$audit->audit_date}.");
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AuditSchedule $auditSchedule)
-    {
-        // Return the specific audit with its program data
-        return $auditSchedule->load('program');
+        return response()->json($audit, 201);
     }
 
     /**
@@ -65,8 +60,12 @@ class AuditScheduleController extends Controller
         }
 
         $auditSchedule->update($validator->validated());
+        $auditSchedule->load('program');
 
-        return response()->json($auditSchedule->load('program'));
+        // --- REAL-TIME NOTIFICATION LOGIC ---
+        $this->notifyAdmins("The audit for '{$auditSchedule->program->name}' has been updated. New date: {$auditSchedule->audit_date}.");
+
+        return response()->json($auditSchedule);
     }
 
     /**
@@ -75,7 +74,25 @@ class AuditScheduleController extends Controller
     public function destroy(AuditSchedule $auditSchedule)
     {
         $auditSchedule->delete();
-
         return response()->json(null, 204);
+    }
+
+    /**
+     * Helper function to notify all admins except the current one.
+     */
+    private function notifyAdmins(string $message)
+    {
+        $currentUser = Auth::user();
+        $adminsToNotify = User::whereHas('role', fn($query) => $query->where('name', 'admin'))
+                               ->where('id', '!=', $currentUser->id)
+                               ->get();
+
+        foreach ($adminsToNotify as $admin) {
+            $admin->notifications()->create([
+                'type' => 'audit_update',
+                'message' => $message,
+                'link' => '/audit-schedule'
+            ]);
+        }
     }
 }

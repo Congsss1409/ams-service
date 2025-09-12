@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable as BaseNotifiable; // Renamed to avoid conflict
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import BelongsTo
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, BaseNotifiable; // Use the renamed trait
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +26,7 @@ class User extends Authenticatable
         'last_name',
         'suffix',
         'personal_email',
-        'role_id', // Add role_id to the fillable array
+        'role_id', // Make sure role_id is fillable
     ];
 
     /**
@@ -54,6 +53,30 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the role of the user.
+     *
+     * Defines the relationship between a User and a Role.
+     */
+    public function role(): BelongsTo
+    {
+        // THE FIX IS HERE:
+        // It should be 'Role::class', not 'role::class'.
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Check if the user has a specific role.
+     *
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        // Ensure role relationship is loaded and name is checked in a case-insensitive way
+        return $this->role && strtolower($this->role->name) === strtolower($roleName);
+    }
+
+    /**
      * Get the qualifications for the user.
      */
     public function qualifications(): HasMany
@@ -68,7 +91,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
-    
+
     /**
      * Get the unread notifications for the user.
      */
@@ -76,25 +99,5 @@ class User extends Authenticatable
     {
         return $this->notifications()->whereNull('read_at');
     }
-
-    /**
-     * Get the role of the user.
-     */
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-    /**
-     * Check if the user has a specific role.
-     *
-     * @param string $roleName
-     * @return bool
-     */
-    public function hasRole(string $roleName): bool
-    {
-        // Check if the user's role name matches the provided role name.
-        // The strtolower() is used to make the check case-insensitive.
-        return $this->role && strtolower($this->role->name) === strtolower($roleName);
-    }
 }
+
