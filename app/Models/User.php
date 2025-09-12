@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable as BaseNotifiable; // Renamed to avoid conflict
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -26,7 +27,7 @@ class User extends Authenticatable
         'last_name',
         'suffix',
         'personal_email',
-        'role', // Make sure role is fillable if you set it during creation
+        'role_id', // Add role_id to the fillable array
     ];
 
     /**
@@ -74,5 +75,26 @@ class User extends Authenticatable
     public function unreadNotifications()
     {
         return $this->notifications()->whereNull('read_at');
+    }
+
+    /**
+     * Get the role of the user.
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Check if the user has a specific role.
+     *
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        // Check if the user's role name matches the provided role name.
+        // The strtolower() is used to make the check case-insensitive.
+        return $this->role && strtolower($this->role->name) === strtolower($roleName);
     }
 }

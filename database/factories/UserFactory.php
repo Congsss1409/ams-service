@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role; // Import the Role model
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -23,12 +24,17 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Find the default "user" role to assign to new factory-created users.
+        $userRole = Role::where('name', 'user')->first();
+
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // FIX: Ensure every user created by this factory gets the default user role.
+            'role_id' => $userRole->id,
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role; // Import the Role model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -12,10 +13,11 @@ class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * We'll eager-load the role relationship to avoid extra database queries.
      */
     public function index()
     {
-        return User::all();
+        return User::with('role')->get();
     }
 
     /**
@@ -27,24 +29,30 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role_id' => 'sometimes|exists:roles,id' // Allow assigning a role, but it's not required
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Find the default "user" role.
+        $userRole = Role::where('name', 'user')->first();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // Add other fields from your user table if they are required
+            // Assign the user role by default if no role_id is provided.
+            'role_id' => $request->role_id ?: $userRole->id,
             'middle_name' => $request->middle_name,
             'last_name' => $request->last_name,
             'suffix' => $request->suffix,
             'personal_email' => $request->personal_email,
         ]);
-
-        return response()->json($user, 201);
+        
+        // Return the new user with their role loaded.
+        return response()->json($user->load('role'), 201);
     }
 
     /**
@@ -52,7 +60,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return $user;
+        // Load the role relationship when showing a single user.
+        return $user->load('role');
     }
 
     /**
@@ -64,6 +73,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
+            'role_id' => 'sometimes|exists:roles,id',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'suffix' => 'nullable|string|max:255',
@@ -74,12 +84,7 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->middle_name = $request->middle_name;
-        $user->last_name = $request->last_name;
-        $user->suffix = $request->suffix;
-        $user->personal_email = $request->personal_email;
+        $user->fill($request->except('password'));
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -87,7 +92,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return response()->json($user);
+        return response()->json($user->load('role'));
     }
 
     /**
@@ -105,4 +110,4 @@ class UserController extends Controller
         return response()->json(null, 204);
     }
 }
-    
+

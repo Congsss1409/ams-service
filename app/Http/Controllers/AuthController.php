@@ -30,10 +30,12 @@ class AuthController extends Controller
     /**
      * Get the authenticated User.
      * This is the new function that fixes the error.
+     * UPDATE: Eager load the 'role' relationship to send it to the frontend.
      */
     public function user(Request $request)
     {
-        return $request->user();
+        // Use load('role') to include the user's role information in the response.
+        return $request->user()->load('role');
     }
 
     public function updateProfile(Request $request)
