@@ -7,10 +7,6 @@ const logoUrl = '/LOGO (1).png';
 const backgroundImageUrl = '/bg.jpg';
 
 // --- Loading Components ---
-
-/**
- * Full-page loading screen shown on initial app load after login.
- */
 function FullScreenLoader() {
     return (
         <div style={{
@@ -19,21 +15,17 @@ function FullScreenLoader() {
             alignItems: 'center',
             height: '100vh',
             width: '100vw',
-            backgroundColor: '#1e3a8a', // Using sidebar blue
+            backgroundColor: '#1e3a8a',
             position: 'fixed',
             top: 0,
             left: 0,
             zIndex: 9999,
         }}>
-            <img src={logoUrl} alt="Loading..." style={{ width: '250px', animation: 'pulse 5s infinite ease-in-out' }} />
+            <img src={logoUrl} alt="Loading..." style={{ width: '150px', animation: 'pulse 1.5s infinite ease-in-out' }} />
         </div>
     );
 }
 
-
-/**
- * Overlay loading indicator shown when navigating between pages.
- */
 function ContentLoader() {
     return (
         <div style={{
@@ -97,32 +89,12 @@ function StyleLoader() {
           vertical-align: middle;
           border-top: 1px solid #dee2e6;
       }
-      .main-wrapper {
-        display: flex;
-        min-height: 100vh;
-      }
-      .main-content {
-        position: relative;
-        padding: 1.5rem 2.5rem;
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-        width: calc(100% - var(--sidebar-width));
-      }
-      .notification-item {
-        white-space: normal;
-        max-width: 350px;
-      }
-      .notification-item small {
-        font-size: 0.75rem;
-      }
-      .notification-item .btn-close {
-        --bs-btn-close-focus-shadow: none;
-      }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.8; }
-      }
+      .main-wrapper { display: flex; min-height: 100vh; }
+      .main-content { position: relative; padding: 1.5rem 2.5rem; display: flex; flex-direction: column; flex-grow: 1; width: calc(100% - var(--sidebar-width)); }
+      .notification-item { white-space: normal; max-width: 350px; }
+      .notification-item small { font-size: 0.75rem; }
+      .notification-item .btn-close { --bs-btn-close-focus-shadow: none; }
+      @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }
     `;
     document.head.appendChild(globalStyle);
     
@@ -167,7 +139,7 @@ export default function App() {
         setUser(userData);
     } catch (error) {
         console.error("Authentication check failed:", error);
-        handleLogout(false); // Logout without API call if token is invalid
+        handleLogout(false);
     } finally {
         setIsAuthLoading(false);
     }
@@ -176,30 +148,23 @@ export default function App() {
   const handleLoginSuccess = (newToken) => {
     localStorage.setItem('authToken', newToken);
     setToken(newToken);
-    setIsAuthLoading(true); // Show loader while fetching user after login
+    setIsAuthLoading(true);
     fetchUser();
   };
 
   const handleLogout = (withApiCall = true) => {
-    if (withApiCall) {
-        apiFetch('/api/logout', { method: 'POST' });
-    }
+    if (withApiCall) { apiFetch('/api/logout', { method: 'POST' }); }
     localStorage.removeItem('authToken');
     setToken(null);
     setUser(null);
   };
   
   useEffect(() => {
-    if (token) {
-      fetchUser();
-    } else {
-      setIsAuthLoading(false);
-    }
+    if (token) { fetchUser(); } 
+    else { setIsAuthLoading(false); }
   }, [token]);
 
-  if (isAuthLoading) {
-    return <FullScreenLoader />;
-  }
+  if (isAuthLoading) { return <FullScreenLoader />; }
 
   return (
     <>
@@ -209,12 +174,64 @@ export default function App() {
   );
 }
 
+// --- 2FA View Component ---
+function TwoFactorAuthView({ email, onLoginSuccess }) {
+    const [code, setCode] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+        try {
+            const response = await apiFetch('/api/verify-2fa', {
+                method: 'POST',
+                body: JSON.stringify({ email, two_factor_code: code }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Verification failed.');
+            if (data.access_token) onLoginSuccess(data.access_token);
+            else throw new Error('Verification failed: No access token received.');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ maxWidth: '380px', width: '100%' }}>
+            <div className="text-center mb-4"><img src={logoUrl} alt="Logo" style={{ width: '120px' }} /><h2 className="mt-3 fw-bold">Enter Verification Code</h2></div>
+            <p className="text-center text-muted">A 6-digit code has been sent to <strong>{email}</strong>. Please enter it below.</p>
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form onSubmit={handleVerify}>
+                <Form.Group className="mb-4">
+                    <Form.Label>Verification Code <span className="text-danger">*</span></Form.Label>
+                    <Form.Control 
+                        type="text" 
+                        value={code} 
+                        onChange={(e) => setCode(e.target.value)} 
+                        required 
+                        maxLength="6"
+                        style={{ borderRadius: '0.5rem', textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5rem' }} 
+                    />
+                </Form.Group>
+                <Button type="submit" disabled={isLoading} style={{ backgroundColor: 'var(--primary-purple)', border: 'none', width: '100%', borderRadius: '2rem', fontWeight: '700', padding: '0.75rem' }}>
+                    {isLoading ? <Spinner as="span" animation="border" size="sm" /> : 'Verify & Sign In'}
+                </Button>
+            </Form>
+        </div>
+    );
+}
+
 // --- Login Page Component ---
 function LoginPage({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [show2fa, setShow2fa] = useState(false); // State to control 2FA view
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -227,8 +244,8 @@ function LoginPage({ onLoginSuccess }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Login failed.');
-      if (data.access_token) onLoginSuccess(data.access_token);
-      else throw new Error('Login failed: No access token received.');
+      // If successful, show the 2FA view instead of logging in directly
+      setShow2fa(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -243,67 +260,75 @@ function LoginPage({ onLoginSuccess }) {
   return (
     <div style={mainContainerStyles}>
       <div style={formColumnStyles}>
-        <div style={{ maxWidth: '380px', width: '100%' }}>
-          <div className="text-center mb-4"><img src={logoUrl} alt="Logo" style={{ width: '120px' }} /><h2 className="mt-3 fw-bold">Sign in</h2></div>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleLogin}>
-            <Form.Group className="mb-3"><Form.Label>Username <span className="text-danger">*</span></Form.Label><Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ borderRadius: '0.5rem' }} /></Form.Group>
-            <Form.Group className="mb-4"><Form.Label>Password <span className="text-danger">*</span></Form.Label><Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ borderRadius: '0.5rem' }} /></Form.Group>
-            <Button type="submit" disabled={isLoading} style={{ backgroundColor: 'var(--primary-purple)', border: 'none', width: '100%', borderRadius: '2rem', fontWeight: '700', padding: '0.75rem' }}>{isLoading ? <Spinner as="span" animation="border" size="sm" /> : 'Sign in'}</Button>
-          </Form>
-        </div>
+        {show2fa ? (
+            <TwoFactorAuthView email={email} onLoginSuccess={onLoginSuccess} />
+        ) : (
+            <div style={{ maxWidth: '380px', width: '100%' }}>
+              <div className="text-center mb-4"><img src={logoUrl} alt="Logo" style={{ width: '120px' }} /><h2 className="mt-3 fw-bold">Sign in</h2></div>
+              {error && <Alert variant="danger">{error}</Alert>}
+              <Form onSubmit={handleLogin}>
+                <Form.Group className="mb-3"><Form.Label>Username <span className="text-danger">*</span></Form.Label><Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ borderRadius: '0.5rem' }} /></Form.Group>
+                <Form.Group className="mb-4"><Form.Label>Password <span className="text-danger">*</span></Form.Label><Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ borderRadius: '0.5rem' }} /></Form.Group>
+                <Button type="submit" disabled={isLoading} style={{ backgroundColor: 'var(--primary-purple)', border: 'none', width: '100%', borderRadius: '2rem', fontWeight: '700', padding: '0.75rem' }}>
+                    {isLoading ? <Spinner as="span" animation="border" size="sm" /> : 'Sign in'}
+                </Button>
+              </Form>
+            </div>
+        )}
       </div>
       <div style={brandingColumnStyles} className="d-none d-lg-flex"><div><h1 style={{ fontSize: '3.5rem', fontWeight: '700' }}>School Management<br />System III</h1><p>Accreditation Management System</p></div></div>
     </div>
   );
 }
 
-// --- Dashboard Components (Complete Code for All) ---
+// --- (The rest of the file: Sidebar, TopNavbar, Page Components, DashboardLayout) ---
+// --- This code is unchanged but included for completeness ---
+
 function Sidebar({ user, onViewChange, currentView }) {
-  const isAdmin = user && user.role && user.role.name.toLowerCase() === 'admin';
-  const getInitials = (name) => !name ? '' : name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  const getDisplayName = (user) => !user ? 'Loading...' : [user.name, user.middle_name, user.last_name, user.suffix].filter(Boolean).join(' ');
-  const navLinkStyle = (viewName) => ({
-    color: 'rgba(255, 255, 255, 0.8)',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0.75rem 1rem',
-    borderRadius: '0.375rem',
-    textDecoration: 'none',
-    transition: 'background-color 0.2s, color 0.2s',
-    fontWeight: 500,
-    backgroundColor: currentView === viewName ? 'var(--primary-purple)' : 'transparent',
-    cursor: 'pointer',
-  });
-  return (
-    <aside style={{ width: 'var(--sidebar-width)', backgroundColor: 'var(--sidebar-blue)', color: '#ffffff', display: 'flex', flexDirection: 'column', padding: '1.5rem 1rem', flexShrink: 0 }}>
-      <div className="text-center" style={{ padding: '0 0.5rem 1.5rem 0.5rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        <div style={{ width: '80px', height: '80px', backgroundColor: 'var(--primary-purple)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '2rem', margin: '0 auto 1rem' }}>{getInitials(user?.name)}</div>
-        <h5 style={{ margin: 0, fontWeight: 600, fontSize: '1rem' }}>{getDisplayName(user)}</h5>
-        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.7)' }}>{user?.email || '...'}</p>
-        <Badge pill bg="info" className="mt-2">{user?.role?.name || 'User'}</Badge>
-      </div>
-      <Nav as="ul" className="flex-column" style={{ listStyle: 'none', paddingLeft: 0, flexGrow: 1 }}>
-        <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Main Menu</li>
-        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DASHBOARD')} style={navLinkStyle('DASHBOARD')}><i className="bi bi-speedometer2 me-3 fs-5"></i> Dashboard</a></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROGRAMS')} style={navLinkStyle('PROGRAMS')}><i className="bi bi-card-list me-3 fs-5"></i> Program Management</a></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DOCUMENTS')} style={navLinkStyle('DOCUMENTS')}><i className="bi bi-file-earmark-text me-3 fs-5"></i> Document Repository</a></Nav.Item>
-        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('COMPLIANCE')} style={navLinkStyle('COMPLIANCE')}><i className="bi bi-list-check me-3 fs-5"></i> Compliance Matrix</a></Nav.Item>
-        {isAdmin && (
-            <>
-                <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Administration</li>
-                <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('FACILITIES')} style={navLinkStyle('FACILITIES')}><i className="bi bi-building me-3 fs-5"></i> Facilities Monitoring</a></Nav.Item>
-                <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACTION_PLANS')} style={navLinkStyle('ACTION_PLANS')}><i className="bi bi-clipboard-check me-3 fs-5"></i> Action Plans</a></Nav.Item>
-                <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('AUDIT_SCHEDULE')} style={navLinkStyle('AUDIT_SCHEDULE')}><i className="bi bi-calendar-check me-3 fs-5"></i> Audit Scheduler</a></Nav.Item>
-                <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACCREDITOR_VISIT')} style={navLinkStyle('ACCREDITOR_VISIT')}><i className="bi bi-person-check me-3 fs-5"></i> Accreditor Visits</a></Nav.Item>
-                <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('USERS')} style={navLinkStyle('USERS')}><i className="bi bi-people me-3 fs-5"></i> User Management</a></Nav.Item>
-            </>
-        )}
-        <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Account</li>
-        <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROFILE')} style={navLinkStyle('PROFILE')}><i className="bi bi-person-circle me-3 fs-5"></i> Profile</a></Nav.Item>
-      </Nav>
-    </aside>
-  );
+    const isAdmin = user && user.role && user.role.name.toLowerCase() === 'admin';
+    const getInitials = (name) => !name ? '' : name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const getDisplayName = (user) => !user ? 'Loading...' : [user.name, user.middle_name, user.last_name, user.suffix].filter(Boolean).join(' ');
+    const navLinkStyle = (viewName) => ({
+        color: 'rgba(255, 255, 255, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0.75rem 1rem',
+        borderRadius: '0.375rem',
+        textDecoration: 'none',
+        transition: 'background-color 0.2s, color 0.2s',
+        fontWeight: 500,
+        backgroundColor: currentView === viewName ? 'var(--primary-purple)' : 'transparent',
+        cursor: 'pointer',
+    });
+    return (
+        <aside style={{ width: 'var(--sidebar-width)', backgroundColor: 'var(--sidebar-blue)', color: '#ffffff', display: 'flex', flexDirection: 'column', padding: '1.5rem 1rem', flexShrink: 0 }}>
+        <div className="text-center" style={{ padding: '0 0.5rem 1.5rem 0.5rem', marginBottom: '1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <div style={{ width: '80px', height: '80px', backgroundColor: 'var(--primary-purple)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '2rem', margin: '0 auto 1rem' }}>{getInitials(user?.name)}</div>
+            <h5 style={{ margin: 0, fontWeight: 600, fontSize: '1rem' }}>{getDisplayName(user)}</h5>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.7)' }}>{user?.email || '...'}</p>
+            <Badge pill bg="info" className="mt-2">{user?.role?.name || 'User'}</Badge>
+        </div>
+        <Nav as="ul" className="flex-column" style={{ listStyle: 'none', paddingLeft: 0, flexGrow: 1 }}>
+            <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Main Menu</li>
+            <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DASHBOARD')} style={navLinkStyle('DASHBOARD')}><i className="bi bi-speedometer2 me-3 fs-5"></i> Dashboard</a></Nav.Item>
+            <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROGRAMS')} style={navLinkStyle('PROGRAMS')}><i className="bi bi-card-list me-3 fs-5"></i> Program Management</a></Nav.Item>
+            <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('DOCUMENTS')} style={navLinkStyle('DOCUMENTS')}><i className="bi bi-file-earmark-text me-3 fs-5"></i> Document Repository</a></Nav.Item>
+            <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('COMPLIANCE')} style={navLinkStyle('COMPLIANCE')}><i className="bi bi-list-check me-3 fs-5"></i> Compliance Matrix</a></Nav.Item>
+            {isAdmin && (
+                <>
+                    <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Administration</li>
+                    <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('FACILITIES')} style={navLinkStyle('FACILITIES')}><i className="bi bi-building me-3 fs-5"></i> Facilities Monitoring</a></Nav.Item>
+                    <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACTION_PLANS')} style={navLinkStyle('ACTION_PLANS')}><i className="bi bi-clipboard-check me-3 fs-5"></i> Action Plans</a></Nav.Item>
+                    <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('AUDIT_SCHEDULE')} style={navLinkStyle('AUDIT_SCHEDULE')}><i className="bi bi-calendar-check me-3 fs-5"></i> Audit Scheduler</a></Nav.Item>
+                    <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('ACCREDITOR_VISIT')} style={navLinkStyle('ACCREDITOR_VISIT')}><i className="bi bi-person-check me-3 fs-5"></i> Accreditor Visits</a></Nav.Item>
+                    <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('USERS')} style={navLinkStyle('USERS')}><i className="bi bi-people me-3 fs-5"></i> User Management</a></Nav.Item>
+                </>
+            )}
+            <li style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.5)', padding: '1rem 0.5rem 0.5rem', fontWeight: 600, letterSpacing: '0.5px' }}>Account</li>
+            <Nav.Item as="li" className="mb-1"><a onClick={() => onViewChange('PROFILE')} style={navLinkStyle('PROFILE')}><i className="bi bi-person-circle me-3 fs-5"></i> Profile</a></Nav.Item>
+        </Nav>
+        </aside>
+    );
 }
 
 function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange, notifications, onMarkAsRead, onMarkAllRead, onClearAll, onDeleteNotification }) {

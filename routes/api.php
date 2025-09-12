@@ -29,6 +29,7 @@ use App\Http\Controllers\RoleController; // Import the new RoleController
 
 // --- Public Routes ---
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFactor']); // Add this new route
 
 // --- Protected Routes ---
 Route::middleware('auth:sanctum')->group(function () {
