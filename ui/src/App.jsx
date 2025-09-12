@@ -6,6 +6,56 @@ import { apiFetch } from './api';
 const logoUrl = '/LOGO (1).png';
 const backgroundImageUrl = '/bg.jpg';
 
+// --- Loading Components ---
+
+/**
+ * Full-page loading screen shown on initial app load after login.
+ */
+function FullScreenLoader() {
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            width: '100vw',
+            backgroundColor: '#1e3a8a', // Using sidebar blue
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            zIndex: 9999,
+        }}>
+            <img src={logoUrl} alt="Loading..." style={{ width: '250px', animation: 'pulse 5s infinite ease-in-out' }} />
+        </div>
+    );
+}
+
+
+/**
+ * Overlay loading indicator shown when navigating between pages.
+ */
+function ContentLoader() {
+    return (
+        <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1050,
+            borderRadius: '0.75rem'
+        }}>
+            <Spinner animation="border" role="status" style={{ color: 'var(--primary-purple)' }}>
+                <span className="visually-hidden">Loading...</span>
+            </Spinner>
+        </div>
+    );
+}
+
 // --- Helper component to load CSS and apply global styles ---
 function StyleLoader() {
   useEffect(() => {
@@ -52,6 +102,7 @@ function StyleLoader() {
         min-height: 100vh;
       }
       .main-content {
+        position: relative;
         padding: 1.5rem 2.5rem;
         display: flex;
         flex-direction: column;
@@ -67,6 +118,10 @@ function StyleLoader() {
       }
       .notification-item .btn-close {
         --bs-btn-close-focus-shadow: none;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
       }
     `;
     document.head.appendChild(globalStyle);
@@ -102,6 +157,7 @@ function StyleLoader() {
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const fetchUser = async () => {
     try {
@@ -110,29 +166,40 @@ export default function App() {
         const userData = await response.json();
         setUser(userData);
     } catch (error) {
-        console.error("Error fetching user:", error);
-        handleLogout();
+        console.error("Authentication check failed:", error);
+        handleLogout(false); // Logout without API call if token is invalid
+    } finally {
+        setIsAuthLoading(false);
     }
   };
   
   const handleLoginSuccess = (newToken) => {
     localStorage.setItem('authToken', newToken);
     setToken(newToken);
+    setIsAuthLoading(true); // Show loader while fetching user after login
     fetchUser();
   };
 
-  const handleLogout = () => {
-    apiFetch('/api/logout', { method: 'POST' });
+  const handleLogout = (withApiCall = true) => {
+    if (withApiCall) {
+        apiFetch('/api/logout', { method: 'POST' });
+    }
     localStorage.removeItem('authToken');
     setToken(null);
     setUser(null);
   };
   
   useEffect(() => {
-    if (token && !user) {
+    if (token) {
       fetchUser();
+    } else {
+      setIsAuthLoading(false);
     }
   }, [token]);
+
+  if (isAuthLoading) {
+    return <FullScreenLoader />;
+  }
 
   return (
     <>
@@ -142,7 +209,7 @@ export default function App() {
   );
 }
 
-// --- Login Page ---
+// --- Login Page Component ---
 function LoginPage({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -191,7 +258,7 @@ function LoginPage({ onLoginSuccess }) {
   );
 }
 
-// --- Dashboard Components ---
+// --- Dashboard Components (Complete Code for All) ---
 function Sidebar({ user, onViewChange, currentView }) {
   const isAdmin = user && user.role && user.role.name.toLowerCase() === 'admin';
   const getInitials = (name) => !name ? '' : name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -301,7 +368,6 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
     );
   }
   
-  // --- All Page Components ---
   function DashboardHomepage() {
       const [analysisData, setAnalysisData] = useState([]);
       const [isLoading, setIsLoading] = useState(true);
@@ -558,7 +624,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
   
   function UserManagementPage({ currentUser, onManageQualifications }) {
       const [users, setUsers] = useState([]);
-      const [roles, setRoles] = useState([]); // State for roles
+      const [roles, setRoles] = useState([]);
       const [isLoading, setIsLoading] = useState(true);
       const [isSaving, setIsSaving] = useState(false);
       const [error, setError] = useState('');
@@ -572,7 +638,7 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
           try {
               const [usersRes, rolesRes] = await Promise.all([
                   apiFetch('/api/users'),
-                  apiFetch('/api/roles') // Fetch roles
+                  apiFetch('/api/roles')
               ]);
               if (!usersRes.ok) throw new Error('Failed to fetch users.');
               if (!rolesRes.ok) throw new Error('Failed to fetch roles.');
@@ -689,18 +755,14 @@ function TopNavbar({ onLogout, onToggleSidebar, currentView, user, onViewChange,
                       </td></tr>)}</tbody>
                   </Table>}
               {currentUserData && <Modal show={showModal} onHide={handleCloseModal}><Modal.Header closeButton><Modal.Title>{currentUserData.id ? 'Edit User' : 'Add New User'}</Modal.Title></Modal.Header><Modal.Body><Form>
-                  <Form.Group className="mb-3"><Form.Label>Full Name</Form.Label><Form.Control type="text" defaultValue={currentUserData.name} onChange={(e) => setCurrentUserData({ ...currentUserData, name: e.target.value })} required /></Form.Group>
-                  <Form.Group className="mb-3"><Form.Label>Email Address</Form.Label><Form.Control type="email" defaultValue={currentUserData.email} onChange={(e) => setCurrentUserData({ ...currentUserData, email: e.target.value })} required /></Form.Group>
-                  
+                  <Form.Group className="mb-3"><Form.Label>Full Name</Form.Label><Form.Control type="text" value={currentUserData.name} onChange={(e) => setCurrentUserData({ ...currentUserData, name: e.target.value })} required /></Form.Group>
+                  <Form.Group className="mb-3"><Form.Label>Email Address</Form.Label><Form.Control type="email" value={currentUserData.email} onChange={(e) => setCurrentUserData({ ...currentUserData, email: e.target.value })} required /></Form.Group>
                   <Form.Group className="mb-3"><Form.Label>Role</Form.Label>
                       <Form.Select value={currentUserData.role_id || ''} onChange={(e) => setCurrentUserData({ ...currentUserData, role_id: e.target.value })} required>
                           <option value="" disabled>Select a role</option>
-                          {roles.map(role => (
-                              <option key={role.id} value={role.id}>{role.name}</option>
-                          ))}
+                          {roles.map(role => ( <option key={role.id} value={role.id}>{role.name}</option> ))}
                       </Form.Select>
                   </Form.Group>
-                  
                   <hr /><p className="text-muted">{currentUserData.id ? 'Leave password fields blank to keep current password.' : ''}</p>
                   <Form.Group className="mb-3"><Form.Label>Password</Form.Label><Form.Control type="password" placeholder={currentUserData.id ? 'New Password' : ''} onChange={(e) => setCurrentUserData({ ...currentUserData, password: e.target.value })} required={!currentUserData.id} /></Form.Group>
                   <Form.Group className="mb-3"><Form.Label>Confirm Password</Form.Label><Form.Control type="password" placeholder={currentUserData.id ? 'Confirm New Password' : ''} onChange={(e) => setCurrentUserData({ ...currentUserData, password_confirmation: e.target.value })} required={!currentUserData.id} /></Form.Group>
@@ -1210,6 +1272,7 @@ function DashboardLayout({ user, onLogout, setUser }) {
     const [selectedProgram, setSelectedProgram] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const [notifications, setNotifications] = useState([]);
+    const [isNavigating, setIsNavigating] = useState(false);
     
     const isAdmin = user && user.role && user.role.name.toLowerCase() === 'admin';
     const adminOnlyViews = ['USERS', 'FACILITIES', 'ACTION_PLANS', 'AUDIT_SCHEDULE', 'ACCREDITOR_VISIT', 'QUALIFICATIONS'];
@@ -1266,23 +1329,37 @@ function DashboardLayout({ user, onLogout, setUser }) {
         }
     }, []);
     
-    const handleManageDocuments = (program) => { setSelectedProgram(program); setCurrentView('DOCUMENTS'); };
-    const handleManageActionPlans = (program) => { setSelectedProgram(program); setCurrentView('ACTION_PLANS'); };
-    const handleBackToPrograms = () => { setSelectedProgram(null); setCurrentView('PROGRAMS'); };
-    const handleManageQualifications = (userForQual) => { setSelectedUser(userForQual); setCurrentView('QUALIFICATIONS'); };
-    const handleBackToUsers = () => { setSelectedUser(null); setCurrentView('USERS'); };
+    const handleManageDocuments = (program) => { handleViewChange('DOCUMENTS', { program }); };
+    const handleManageActionPlans = (program) => { handleViewChange('ACTION_PLANS', { program }); };
+    const handleBackToPrograms = () => { handleViewChange('PROGRAMS', { program: null }); };
+    const handleManageQualifications = (userForQual) => { handleViewChange('QUALIFICATIONS', { user: userForQual }); };
+    const handleBackToUsers = () => { handleViewChange('USERS', { user: null }); };
 
-    const handleViewChange = (view) => {
-        if (adminOnlyViews.includes(view) && !isAdmin) {
-            window.Swal.fire('Access Denied', 'You do not have permission to view this page.', 'error');
-            return;
-        }
-        if ((view === 'DOCUMENTS' || view === 'ACTION_PLANS') && !selectedProgram) {
-            window.Swal.fire('Info', 'Please select a program first from the Program Management page.', 'info');
-            setCurrentView('PROGRAMS');
-            return;
-        }
-        setCurrentView(view);
+    const handleViewChange = (view, context = {}) => {
+        setIsNavigating(true);
+
+        setTimeout(() => { // Simulate network latency for better UX
+            if (adminOnlyViews.includes(view) && !isAdmin) {
+                window.Swal.fire('Access Denied', 'You do not have permission to view this page.', 'error');
+                setIsNavigating(false);
+                return;
+            }
+
+            if (context.program) setSelectedProgram(context.program);
+            if (context.user) setSelectedUser(context.user);
+            if (context.program === null) setSelectedProgram(null);
+            if (context.user === null) setSelectedUser(null);
+            
+            // Special check for document/action plan pages to ensure a program is selected
+            if ((view === 'DOCUMENTS' || view === 'ACTION_PLANS') && !selectedProgram && !context.program) {
+                window.Swal.fire('Info', 'Please select a program first from the Program Management page.', 'info');
+                setCurrentView('PROGRAMS');
+            } else {
+                setCurrentView(view);
+            }
+
+            setIsNavigating(false);
+        }, 300); // 300ms delay
     };
 
     const handleUserUpdate = (updatedUser) => setUser(updatedUser);
@@ -1311,6 +1388,7 @@ function DashboardLayout({ user, onLogout, setUser }) {
         <div className="main-wrapper">
             {sidebarVisible && <Sidebar user={user} onViewChange={handleViewChange} currentView={currentView} />}
             <main className="main-content">
+                {isNavigating && <ContentLoader />}
                 <TopNavbar 
                     onLogout={onLogout} 
                     onToggleSidebar={toggleSidebar} 
